@@ -39,6 +39,8 @@ function HomePage() {
   const [showLicenseModal, setShowLicenseModal] = useState(false);
   const [licenseCode, setLicenseCode] = useState('');
   const [activating, setActivating] = useState(false);
+  const [deferredPrompt, setDeferredPrompt] = useState(null);
+  const [showInstallButton, setShowInstallButton] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
