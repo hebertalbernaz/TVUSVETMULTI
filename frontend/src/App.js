@@ -234,6 +234,20 @@ function PatientCard({ patient, onUpdate }) {
             </ScrollArea>
           </DialogContent>
         </Dialog>
+
+        <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Editar Paciente</DialogTitle>
+              <DialogDescription>Atualize os dados do paciente</DialogDescription>
+            </DialogHeader>
+            <NewPatientForm 
+              patient={patient}
+              onSuccess={() => { setShowEditDialog(false); onUpdate(); }} 
+              onCancel={() => setShowEditDialog(false)} 
+            />
+          </DialogContent>
+        </Dialog>
       </CardContent>
     </Card>
   );
