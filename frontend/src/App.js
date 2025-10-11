@@ -406,6 +406,9 @@ function ExamPage() {
   const [referenceValues, setReferenceValues] = useState([]);
   const [organsData, setOrgansData] = useState([]);
   const [currentOrganIndex, setCurrentOrganIndex] = useState(0);
+  const [examWeight, setExamWeight] = useState('');
+  const [examImages, setExamImages] = useState([]);
+  const [uploading, setUploading] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
