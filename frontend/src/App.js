@@ -166,9 +166,19 @@ function PatientCard({ patient, onUpdate }) {
       <CardHeader>
         <CardTitle className="flex items-center justify-between">
           <span>{patient.name}</span>
-          <Badge variant={patient.species === 'dog' ? 'default' : 'secondary'}>
-            {patient.species === 'dog' ? 'Cão' : 'Gato'}
-          </Badge>
+          <div className="flex gap-2 items-center">
+            <Button
+              onClick={() => setShowEditDialog(true)}
+              variant="ghost"
+              size="sm"
+              data-testid={`edit-patient-${patient.id}`}
+            >
+              <Edit className="h-4 w-4" />
+            </Button>
+            <Badge variant={patient.species === 'dog' ? 'default' : 'secondary'}>
+              {patient.species === 'dog' ? 'Cão' : 'Gato'}
+            </Badge>
+          </div>
         </CardTitle>
         <CardDescription>
           {patient.breed} • {patient.weight}kg • {patient.size === 'small' ? 'Pequeno' : patient.size === 'medium' ? 'Médio' : 'Grande'}
