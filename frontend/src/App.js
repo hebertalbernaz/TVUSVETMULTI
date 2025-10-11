@@ -389,7 +389,9 @@ function NewPatientForm({ patient, onSuccess, onCancel }) {
       </div>
 
       <div className="flex gap-2 pt-4">
-        <Button type="submit" className="flex-1" data-testid="save-patient-button">Salvar</Button>
+        <Button type="submit" className="flex-1" data-testid="save-patient-button">
+          {patient ? 'Atualizar' : 'Salvar'}
+        </Button>
         <Button type="button" variant="outline" onClick={onCancel} className="flex-1">Cancelar</Button>
       </div>
     </form>
