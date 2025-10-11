@@ -428,10 +428,16 @@ function ExamPage() {
 
       // Initialize organs data
       const allOrgans = [...ORGANS];
-      if (!patientRes.data.is_neutered) {
-        if (patientRes.data.sex === 'male') {
-          allOrgans.push(...REPRODUCTIVE_ORGANS_MALE);
+      // For males: include prostate even if neutered, testicles only if not neutered
+      if (patientRes.data.sex === 'male') {
+        if (patientRes.data.is_neutered) {
+          allOrgans.push(...REPRODUCTIVE_ORGANS_MALE_NEUTERED);
         } else {
+          allOrgans.push(...REPRODUCTIVE_ORGANS_MALE);
+        }
+      } else {
+        // For females: only add reproductive organs if not neutered
+        if (!patientRes.data.is_neutered) {
           allOrgans.push(...REPRODUCTIVE_ORGANS_FEMALE);
         }
       }
