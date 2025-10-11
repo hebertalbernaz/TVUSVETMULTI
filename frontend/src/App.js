@@ -598,20 +598,20 @@ function ExamPage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-12 gap-6">
-          <div className="col-span-3">
+        <div className="grid grid-cols-12 gap-4">
+          <div className="col-span-2">
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg">Órgãos</CardTitle>
+                <CardTitle className="text-sm">Órgãos</CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="p-2">
                 <ScrollArea className="h-[calc(100vh-300px)]">
                   <div className="space-y-1">
                     {organsData.map((organ, idx) => (
                       <Button
                         key={idx}
                         variant={currentOrganIndex === idx ? 'default' : 'ghost'}
-                        className="w-full justify-start text-left"
+                        className="w-full justify-start text-left text-xs py-2 h-auto"
                         onClick={() => setCurrentOrganIndex(idx)}
                         data-testid={`organ-button-${idx}`}
                       >
@@ -624,7 +624,7 @@ function ExamPage() {
             </Card>
           </div>
 
-          <div className="col-span-9">
+          <div className="col-span-7">
             {currentOrgan && (
               <OrganEditor
                 organ={currentOrgan}
@@ -633,6 +633,68 @@ function ExamPage() {
                 onChange={(field, value) => updateOrganData(currentOrganIndex, field, value)}
               />
             )}
+          </div>
+
+          <div className="col-span-3">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-sm flex items-center justify-between">
+                  <span>Imagens ({examImages.length})</span>
+                  <label htmlFor="image-upload">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => document.getElementById('image-upload').click()}
+                      disabled={uploading}
+                      data-testid="upload-images-button"
+                    >
+                      <Upload className="h-3 w-3 mr-1" />
+                      {uploading ? 'Enviando...' : 'Adicionar'}
+                    </Button>
+                  </label>
+                  <input
+                    id="image-upload"
+                    type="file"
+                    multiple
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                    className="hidden"
+                  />
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-2">
+                <ScrollArea className="h-[calc(100vh-300px)]">
+                  <div className="space-y-2">
+                    {examImages.map((image) => (
+                      <div key={image.id} className="relative group">
+                        <img
+                          src={`${API}/images/${image.id}`}
+                          alt={image.organ || 'Exam image'}
+                          className="w-full h-32 object-cover rounded border"
+                        />
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity h-6 w-6 p-0"
+                          onClick={() => handleDeleteImage(image.id)}
+                          data-testid={`delete-image-${image.id}`}
+                        >
+                          <X className="h-3 w-3" />
+                        </Button>
+                        {image.organ && (
+                          <p className="text-xs text-center mt-1 text-gray-600">{image.organ}</p>
+                        )}
+                      </div>
+                    ))}
+                    {examImages.length === 0 && (
+                      <p className="text-xs text-gray-500 text-center py-8">
+                        Nenhuma imagem adicionada
+                      </p>
+                    )}
+                  </div>
+                </ScrollArea>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </div>
