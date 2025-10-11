@@ -206,9 +206,10 @@ async def delete_patient(patient_id: str):
 # Exam endpoints
 @api_router.post("/exams", response_model=Exam)
 async def create_exam(exam_data: ExamCreate):
-    exam = Exam(**exam_data.model_dump())
-    if exam.exam_date is None:
-        exam.exam_date = datetime.now(timezone.utc)
+    exam_dict = exam_data.model_dump()
+    if exam_dict.get('exam_date') is None:
+        exam_dict['exam_date'] = datetime.now(timezone.utc)
+    exam = Exam(**exam_dict)
     doc = prepare_for_mongo(exam.model_dump())
     await db.exams.insert_one(doc)
     return exam
