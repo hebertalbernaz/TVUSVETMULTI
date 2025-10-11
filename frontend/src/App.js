@@ -26,7 +26,8 @@ const ORGANS = [
   'Duodeno', 'Jejuno', 'Cólon', 'Ceco', 'Íleo', 'Linfonodos'
 ];
 
-const REPRODUCTIVE_ORGANS_MALE = ['Testículo Direito', 'Testículo Esquerdo', 'Próstata'];
+const REPRODUCTIVE_ORGANS_MALE = ['Próstata', 'Testículo Direito', 'Testículo Esquerdo'];
+const REPRODUCTIVE_ORGANS_MALE_NEUTERED = ['Próstata']; // Cão castrado ainda tem próstata
 const REPRODUCTIVE_ORGANS_FEMALE = ['Corpo Uterino', 'Corno Uterino Direito', 'Corno Uterino Esquerdo', 'Ovário Direito', 'Ovário Esquerdo'];
 
 function HomePage() {
