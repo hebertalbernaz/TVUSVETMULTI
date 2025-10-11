@@ -70,8 +70,10 @@ function HomePage() {
       <div className="container mx-auto p-6">
         <div className="flex justify-between items-center mb-8">
           <div>
-            <h1 className="text-4xl font-bold text-gray-800 mb-2" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>VetUSG</h1>
-            <p className="text-gray-600">Sistema de Laudos de Ultrassonografia Veterinária</p>
+            <h1 className="text-5xl font-bold bg-gradient-to-r from-teal-600 to-emerald-600 bg-clip-text text-transparent mb-2" style={{ fontFamily: 'Manrope, sans-serif' }}>
+              TVUSVET Laudos
+            </h1>
+            <p className="text-gray-600">Sistema de Ultrassonografia Veterinária</p>
           </div>
           <div className="flex gap-3">
             <Button
