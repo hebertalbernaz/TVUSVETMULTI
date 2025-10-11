@@ -172,6 +172,38 @@ function HomePage() {
           <NewPatientForm onSuccess={() => { setShowNewPatient(false); loadPatients(); }} onCancel={() => setShowNewPatient(false)} />
         </DialogContent>
       </Dialog>
+
+      <Dialog open={showLicenseModal} onOpenChange={setShowLicenseModal}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Ativação de Licença</DialogTitle>
+            <DialogDescription>
+              Para continuar usando o sistema, insira seu código de licença
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="license-code">Código de Licença</Label>
+              <Input
+                id="license-code"
+                value={licenseCode}
+                onChange={(e) => setLicenseCode(e.target.value)}
+                placeholder="Digite seu código de licença"
+                className="mt-1"
+              />
+            </div>
+            <div className="flex gap-2">
+              <Button 
+                onClick={activateLicense} 
+                disabled={activating || !licenseCode.trim()}
+                className="flex-1"
+              >
+                {activating ? 'Ativando...' : 'Ativar Licença'}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
