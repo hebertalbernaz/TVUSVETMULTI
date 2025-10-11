@@ -139,15 +139,32 @@ function HomePage() {
 
 function PatientCard({ patient, onUpdate }) {
   const [exams, setExams] = useState([]);
+  const [examsCount, setExamsCount] = useState(0);
   const [showExams, setShowExams] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [showNewExamDialog, setShowNewExamDialog] = useState(false);
   const navigate = useNavigate();
 
+  // Load exams count on mount
+  useEffect(() => {
+    loadExamsCount();
+  }, [patient.id]);
+
+  const loadExamsCount = async () => {
+    try {
+      const response = await axios.get(`${API}/exams?patient_id=${patient.id}`);
+      setExamsCount(response.data.length);
+      setExams(response.data);
+    } catch (error) {
+      console.error('Erro ao carregar contagem de exames:', error);
+    }
+  };
+
   const loadExams = async () => {
     try {
       const response = await axios.get(`${API}/exams?patient_id=${patient.id}`);
       setExams(response.data);
+      setExamsCount(response.data.length);
       setShowExams(true);
     } catch (error) {
       toast.error('Erro ao carregar exames');
