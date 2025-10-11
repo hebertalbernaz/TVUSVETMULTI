@@ -204,6 +204,62 @@ function HomePage() {
           </div>
         </DialogContent>
       </Dialog>
+
+      <Dialog open={showLicenseModal} onOpenChange={(open) => !licenseStatus?.needs_activation && setShowLicenseModal(open)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-2xl">🔐 Ativação de Licença TVUSVET</DialogTitle>
+            <DialogDescription>
+              {licenseStatus?.is_open_license ? (
+                <span className="text-green-600">Licença permanente ativa - Sistema liberado!</span>
+              ) : (
+                <>
+                  Para continuar usando o sistema, insira seu código de licença semestral.
+                  {licenseStatus && (
+                    <div className="mt-2 text-sm">
+                      <p>Códigos restantes: <strong>{licenseStatus.remaining_codes}</strong></p>
+                    </div>
+                  )}
+                </>
+              )}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="license-code">Código de Licença</Label>
+              <Input
+                id="license-code"
+                value={licenseCode}
+                onChange={(e) => setLicenseCode(e.target.value.toUpperCase())}
+                placeholder="XXXX-XXXX-XXXX-XXXX"
+                className="mt-1 font-mono"
+                data-testid="license-code-input"
+                onKeyPress={(e) => e.key === 'Enter' && activateLicense()}
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                Formato: XXXX-XXXX-XXXX-XXXX
+              </p>
+            </div>
+            <div className="flex gap-2">
+              <Button 
+                onClick={activateLicense} 
+                disabled={activating || !licenseCode.trim()}
+                className="flex-1 bg-gradient-to-r from-teal-600 to-emerald-600"
+                data-testid="activate-license-button"
+              >
+                {activating ? 'Ativando...' : 'Ativar Licença'}
+              </Button>
+            </div>
+            {licenseStatus && !licenseStatus.is_open_license && (
+              <div className="text-xs text-gray-600 bg-gray-50 p-3 rounded">
+                <p><strong>Nota:</strong> Cada código ativa o sistema por 6 meses.</p>
+                <p className="mt-1">Após consumir todos os {licenseStatus.remaining_codes} códigos restantes, 
+                o sistema se tornará de licença aberta permanente.</p>
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
