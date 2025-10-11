@@ -47,6 +47,18 @@ function HomePage() {
     checkLicense();
     loadPatients();
     initializeDefaults();
+    
+    // PWA Install prompt
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+      setShowInstallButton(true);
+    });
+
+    // Check if already installed
+    if (window.matchMedia('(display-mode: standalone)').matches) {
+      setShowInstallButton(false);
+    }
   }, []);
 
   const checkLicense = async () => {
