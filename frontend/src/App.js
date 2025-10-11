@@ -930,10 +930,10 @@ function SettingsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50" data-testid="settings-page">
+    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50" data-testid="settings-page">
       <div className="container mx-auto p-6">
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold text-gray-800" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>Configurações</h1>
+          <h1 className="text-3xl font-bold bg-gradient-to-r from-teal-600 to-emerald-600 bg-clip-text text-transparent" style={{ fontFamily: 'Manrope, sans-serif' }}>Configurações</h1>
           <Button onClick={() => navigate('/')} variant="outline">
             <X className="mr-2 h-4 w-4" />
             Voltar
