@@ -253,8 +253,8 @@ function PatientCard({ patient, onUpdate }) {
   );
 }
 
-function NewPatientForm({ onSuccess, onCancel }) {
-  const [formData, setFormData] = useState({
+function NewPatientForm({ patient, onSuccess, onCancel }) {
+  const [formData, setFormData] = useState(patient || {
     name: '',
     species: 'dog',
     breed: '',
@@ -268,14 +268,21 @@ function NewPatientForm({ onSuccess, onCancel }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await axios.post(`${API}/patients`, {
+      const data = {
         ...formData,
         weight: parseFloat(formData.weight)
-      });
-      toast.success('Paciente cadastrado com sucesso!');
+      };
+      
+      if (patient) {
+        await axios.put(`${API}/patients/${patient.id}`, data);
+        toast.success('Paciente atualizado com sucesso!');
+      } else {
+        await axios.post(`${API}/patients`, data);
+        toast.success('Paciente cadastrado com sucesso!');
+      }
       onSuccess();
     } catch (error) {
-      toast.error('Erro ao cadastrar paciente');
+      toast.error(`Erro ao ${patient ? 'atualizar' : 'cadastrar'} paciente`);
       console.error(error);
     }
   };
