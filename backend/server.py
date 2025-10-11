@@ -724,6 +724,125 @@ async def export_exam_to_docx(exam_id: str):
         media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
     )
 
+# License endpoints
+@api_router.get("/license/status", response_model=LicenseStatus)
+async def get_license_status():
+    """Check current license status"""
+    # Check if there's an active license
+    active_license = await db.licenses.find_one({
+        "is_used": True,
+        "expires_at": {"$gt": datetime.now(timezone.utc).isoformat()}
+    })
+    
+    # Count remaining codes
+    total_codes = await db.license_codes.count_documents({})
+    used_codes = await db.license_codes.count_documents({"is_used": True})
+    remaining_codes = total_codes - used_codes
+    
+    # If all 200 codes are consumed, open license
+    is_open = total_codes >= 200 and remaining_codes == 0
+    
+    if is_open:
+        return LicenseStatus(
+            is_active=True,
+            needs_activation=False,
+            expires_at=None,
+            remaining_codes=0,
+            is_open_license=True
+        )
+    
+    if active_license:
+        expires_at = datetime.fromisoformat(active_license["expires_at"])
+        return LicenseStatus(
+            is_active=True,
+            needs_activation=False,
+            expires_at=expires_at,
+            remaining_codes=remaining_codes,
+            is_open_license=False
+        )
+    
+    return LicenseStatus(
+        is_active=False,
+        needs_activation=True,
+        expires_at=None,
+        remaining_codes=remaining_codes,
+        is_open_license=False
+    )
+
+@api_router.post("/license/activate")
+async def activate_license(code: str):
+    """Activate license with a code"""
+    # Find the code
+    license_code = await db.license_codes.find_one({"code": code, "is_used": False})
+    
+    if not license_code:
+        raise HTTPException(status_code=404, detail="Código inválido ou já utilizado")
+    
+    # Calculate expiration (6 months from now)
+    expires_at = datetime.now(timezone.utc)
+    # Add 6 months (approximately 180 days)
+    from datetime import timedelta
+    expires_at = expires_at + timedelta(days=180)
+    
+    # Mark code as used
+    await db.license_codes.update_one(
+        {"code": code},
+        {
+            "$set": {
+                "is_used": True,
+                "used_at": datetime.now(timezone.utc).isoformat(),
+                "expires_at": expires_at.isoformat()
+            }
+        }
+    )
+    
+    # Create license record
+    license_record = {
+        "id": str(uuid.uuid4()),
+        "code": code,
+        "is_used": True,
+        "used_at": datetime.now(timezone.utc).isoformat(),
+        "expires_at": expires_at.isoformat()
+    }
+    await db.licenses.insert_one(license_record)
+    
+    return {"message": "Licença ativada com sucesso!", "expires_at": expires_at.isoformat()}
+
+@api_router.post("/license/initialize-codes")
+async def initialize_license_codes():
+    """Initialize 200 random license codes (admin only - run once)"""
+    # Check if codes already exist
+    existing_count = await db.license_codes.count_documents({})
+    if existing_count > 0:
+        return {"message": f"Códigos já existem: {existing_count} códigos"}
+    
+    import random
+    import string
+    
+    codes = []
+    for i in range(200):
+        # Generate random code format: XXXX-XXXX-XXXX-XXXX
+        segments = []
+        for _ in range(4):
+            segment = ''.join(random.choices(string.ascii_uppercase + string.digits, k=4))
+            segments.append(segment)
+        code = '-'.join(segments)
+        
+        license_code = {
+            "id": str(uuid.uuid4()),
+            "code": code,
+            "is_used": False,
+            "used_at": None,
+            "expires_at": None
+        }
+        codes.append(code)
+        await db.license_codes.insert_one(license_code)
+    
+    return {
+        "message": "200 códigos gerados com sucesso!",
+        "codes": codes
+    }
+
 # Initialize default data
 @api_router.post("/initialize-defaults")
 async def initialize_defaults():
