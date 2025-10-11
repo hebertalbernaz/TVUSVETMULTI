@@ -15,6 +15,7 @@ from docx.shared import Pt, RGBColor, Inches
 from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
 import base64
 import io
+from PIL import Image
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -37,6 +38,8 @@ IMAGES_DIR = UPLOAD_DIR / "images"
 IMAGES_DIR.mkdir(exist_ok=True)
 REPORTS_DIR = UPLOAD_DIR / "reports"
 REPORTS_DIR.mkdir(exist_ok=True)
+LETTERHEAD_DIR = UPLOAD_DIR / "letterheads"
+LETTERHEAD_DIR.mkdir(exist_ok=True)
 
 # Models
 class Patient(BaseModel):
@@ -87,6 +90,7 @@ class Exam(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     patient_id: str
     exam_date: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    exam_weight: Optional[float] = None  # Peso no momento do exame
     organs_data: List[OrganData] = []
     images: List[ExamImage] = []
     final_report: str = ""
@@ -95,10 +99,12 @@ class Exam(BaseModel):
 class ExamCreate(BaseModel):
     patient_id: str
     exam_date: Optional[datetime] = None
+    exam_weight: Optional[float] = None
 
 class ExamUpdate(BaseModel):
     organs_data: Optional[List[OrganData]] = None
     final_report: Optional[str] = None
+    exam_weight: Optional[float] = None
 
 class TemplateText(BaseModel):
     model_config = ConfigDict(extra="ignore")
@@ -141,6 +147,7 @@ class Settings(BaseModel):
     
     id: str = "global_settings"
     letterhead_path: Optional[str] = None
+    letterhead_text_area: Optional[Dict[str, float]] = None  # {x, y, width, height}
     clinic_name: Optional[str] = None
     clinic_address: Optional[str] = None
     veterinarian_name: Optional[str] = None
@@ -338,6 +345,21 @@ async def update_settings(settings_data: Settings):
     )
     return settings_data
 
+# Letterhead upload endpoint
+@api_router.post("/upload-letterhead")
+async def upload_letterhead(file: UploadFile = File(...)):
+    # Save file
+    file_ext = Path(file.filename).suffix
+    letterhead_id = str(uuid.uuid4())
+    filename = f"letterhead_{letterhead_id}{file_ext}"
+    filepath = LETTERHEAD_DIR / filename
+    
+    content = await file.read()
+    with open(filepath, "wb") as f:
+        f.write(content)
+    
+    return {"path": str(filepath), "filename": filename}
+
 # Image upload endpoint
 @api_router.post("/exams/{exam_id}/images")
 async def upload_exam_image(exam_id: str, file: UploadFile = File(...), organ: Optional[str] = None):
@@ -453,7 +475,11 @@ async def export_exam_to_docx(exam_id: str):
     doc.add_paragraph(f"Nome: {patient['name']}")
     doc.add_paragraph(f"Espécie: {'Canino' if patient['species'] == 'dog' else 'Felino'}")
     doc.add_paragraph(f"Raça: {patient['breed']}")
-    doc.add_paragraph(f"Peso: {patient['weight']} kg")
+    
+    # Use exam weight if available, otherwise use patient weight
+    weight = exam.get('exam_weight') or patient['weight']
+    doc.add_paragraph(f"Peso: {weight} kg")
+    
     doc.add_paragraph(f"Porte: {patient['size'].capitalize()}")
     doc.add_paragraph(f"Sexo: {'Macho' if patient['sex'] == 'male' else 'Fêmea'}")
     if patient.get('is_neutered'):
@@ -467,15 +493,61 @@ async def export_exam_to_docx(exam_id: str):
     doc.add_paragraph(f"Data do Exame: {exam_date.strftime('%d/%m/%Y')}")
     doc.add_paragraph()
     
-    # Organ findings
+    # Organ findings with measurements
     doc.add_heading('Achados Ultrassonográficos', level=2)
     
     organs_data = exam.get('organs_data', [])
     for organ_data in organs_data:
-        if organ_data.get('report_text'):
+        if organ_data.get('report_text') or organ_data.get('measurements'):
             doc.add_heading(organ_data['organ_name'], level=3)
-            doc.add_paragraph(organ_data['report_text'])
+            
+            # Add measurements if present
+            measurements = organ_data.get('measurements', {})
+            if measurements:
+                measurements_para = doc.add_paragraph()
+                measurements_para.add_run("Medidas: ").bold = True
+                
+                measurements_list = []
+                for mtype, mdata in measurements.items():
+                    measurements_list.append(f"{mtype}: {mdata['value']} {mdata['unit']}")
+                
+                measurements_para.add_run(", ".join(measurements_list))
+                doc.add_paragraph()
+            
+            # Add report text
+            if organ_data.get('report_text'):
+                doc.add_paragraph(organ_data['report_text'])
+            
             doc.add_paragraph()
+    
+    # Add images (6 per page)
+    images = exam.get('images', [])
+    if images:
+        doc.add_page_break()
+        doc.add_heading('Imagens do Exame', level=2)
+        
+        image_count = 0
+        for img in images:
+            try:
+                filepath = Path(img['path'])
+                if filepath.exists():
+                    # Add image with caption
+                    img_paragraph = doc.add_paragraph()
+                    run = img_paragraph.add_run()
+                    run.add_picture(str(filepath), width=Inches(2.5))
+                    
+                    # Add caption if organ is specified
+                    if img.get('organ'):
+                        caption = doc.add_paragraph(img['organ'], style='Caption')
+                        caption.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
+                    
+                    image_count += 1
+                    
+                    # Add page break after 6 images
+                    if image_count % 6 == 0 and image_count < len(images):
+                        doc.add_page_break()
+            except Exception as e:
+                logging.error(f"Error adding image to document: {e}")
     
     # Save document
     output_path = REPORTS_DIR / f"laudo_{exam_id}.docx"
