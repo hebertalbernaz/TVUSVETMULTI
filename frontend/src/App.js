@@ -34,12 +34,51 @@ function HomePage() {
   const [patients, setPatients] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [showNewPatient, setShowNewPatient] = useState(false);
+  const [editingPatient, setEditingPatient] = useState(null);
+  const [licenseStatus, setLicenseStatus] = useState(null);
+  const [showLicenseModal, setShowLicenseModal] = useState(false);
+  const [licenseCode, setLicenseCode] = useState('');
+  const [activating, setActivating] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
+    checkLicense();
     loadPatients();
     initializeDefaults();
   }, []);
+
+  const checkLicense = async () => {
+    try {
+      const response = await axios.get(`${API}/license/status`);
+      setLicenseStatus(response.data);
+      
+      if (response.data.needs_activation) {
+        setShowLicenseModal(true);
+      }
+    } catch (error) {
+      console.error('Erro ao verificar licença:', error);
+    }
+  };
+
+  const activateLicense = async () => {
+    if (!licenseCode.trim()) {
+      toast.error('Por favor, insira um código de licença');
+      return;
+    }
+
+    setActivating(true);
+    try {
+      await axios.post(`${API}/license/activate?code=${encodeURIComponent(licenseCode)}`);
+      toast.success('Licença ativada com sucesso!');
+      setShowLicenseModal(false);
+      setLicenseCode('');
+      await checkLicense();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Código inválido ou já utilizado');
+    } finally {
+      setActivating(false);
+    }
+  };
 
   const initializeDefaults = async () => {
     try {
