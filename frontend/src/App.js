@@ -469,12 +469,55 @@ function ExamPage() {
   const saveExam = async () => {
     try {
       await axios.put(`${API}/exams/${examId}`, {
-        organs_data: organsData
+        organs_data: organsData,
+        exam_weight: examWeight ? parseFloat(examWeight) : null
       });
       toast.success('Exame salvo com sucesso!');
     } catch (error) {
       toast.error('Erro ao salvar exame');
       console.error(error);
+    }
+  };
+
+  const handleImageUpload = async (event) => {
+    const files = event.target.files;
+    if (!files || files.length === 0) return;
+
+    setUploading(true);
+    try {
+      for (let file of files) {
+        const formData = new FormData();
+        formData.append('file', file);
+
+        const response = await axios.post(
+          `${API}/exams/${examId}/images`,
+          formData,
+          {
+            headers: {
+              'Content-Type': 'multipart/form-data'
+            }
+          }
+        );
+        
+        setExamImages(prev => [...prev, response.data]);
+      }
+      toast.success('Imagens adicionadas com sucesso!');
+      await loadExamData(); // Reload to get updated images
+    } catch (error) {
+      toast.error('Erro ao fazer upload de imagens');
+      console.error(error);
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleDeleteImage = async (imageId) => {
+    try {
+      await axios.delete(`${API}/exams/${examId}/images/${imageId}`);
+      setExamImages(prev => prev.filter(img => img.id !== imageId));
+      toast.success('Imagem removida');
+    } catch (error) {
+      toast.error('Erro ao remover imagem');
     }
   };
 
