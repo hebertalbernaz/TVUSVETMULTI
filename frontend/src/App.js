@@ -241,7 +241,7 @@ function PatientCard({ patient, onUpdate }) {
             data-testid={`view-exams-button-${patient.id}`}
           >
             <FileText className="mr-2 h-5 w-5" />
-            Ver Exames ({exams.length})
+            Ver Exames ({examsCount})
           </Button>
         </div>
 
