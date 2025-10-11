@@ -558,16 +558,29 @@ function ExamPage() {
   const organTemplates = templates.filter(t => t.organ === currentOrgan?.organ_name);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50" data-testid="exam-page">
+    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50" data-testid="exam-page">
       <div className="container mx-auto p-6">
-        <div className="flex justify-between items-center mb-6">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-800" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
+        <div className="flex justify-between items-start mb-6">
+          <div className="flex-1">
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-teal-600 to-emerald-600 bg-clip-text text-transparent mb-2" style={{ fontFamily: 'Manrope, sans-serif' }}>
               Exame de {patient.name}
             </h1>
-            <p className="text-gray-600">
-              {patient.breed} • {patient.weight}kg • {new Date(exam.exam_date).toLocaleDateString('pt-BR')}
+            <p className="text-gray-600 mb-3">
+              {patient.breed} • {new Date(exam.exam_date).toLocaleDateString('pt-BR')}
             </p>
+            <div className="flex items-center gap-2">
+              <Label htmlFor="exam-weight" className="text-sm">Peso no exame (kg):</Label>
+              <Input
+                id="exam-weight"
+                type="number"
+                step="0.1"
+                value={examWeight}
+                onChange={(e) => setExamWeight(e.target.value)}
+                className="w-32"
+                placeholder={patient.weight}
+                data-testid="exam-weight-input"
+              />
+            </div>
           </div>
           <div className="flex gap-2">
             <Button onClick={saveExam} variant="outline" data-testid="save-exam-button">
