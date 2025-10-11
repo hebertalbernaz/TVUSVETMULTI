@@ -706,6 +706,12 @@ function OrganEditor({ organ, templates, referenceValues, onChange }) {
   const [measurements, setMeasurements] = useState(organ.measurements || {});
   const [reportText, setReportText] = useState(organ.report_text || '');
 
+  // Update reportText when organ changes
+  useEffect(() => {
+    setReportText(organ.report_text || '');
+    setMeasurements(organ.measurements || {});
+  }, [organ.organ_name]); // Only reset when organ changes
+
   const addMeasurement = (type, value, unit) => {
     const newMeasurements = {
       ...measurements,
