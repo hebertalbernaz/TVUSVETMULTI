@@ -419,6 +419,8 @@ function ExamPage() {
     try {
       const examRes = await axios.get(`${API}/exams/${examId}`);
       setExam(examRes.data);
+      setExamWeight(examRes.data.exam_weight || '');
+      setExamImages(examRes.data.images || []);
 
       const patientRes = await axios.get(`${API}/patients/${examRes.data.patient_id}`);
       setPatient(patientRes.data);
