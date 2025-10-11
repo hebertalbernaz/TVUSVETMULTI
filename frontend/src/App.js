@@ -146,6 +146,17 @@ function HomePage() {
             </div>
           </div>
           <div className="flex gap-3">
+            {showInstallButton && (
+              <Button
+                onClick={handleInstallClick}
+                variant="outline"
+                className="border-teal-600 text-teal-600 hover:bg-teal-50"
+                data-testid="install-app-button"
+              >
+                <Download className="mr-2 h-4 w-4" />
+                Instalar App
+              </Button>
+            )}
             <Button
               onClick={() => navigate('/settings')}
               variant="outline"
