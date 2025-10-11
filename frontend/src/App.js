@@ -66,7 +66,7 @@ function HomePage() {
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50" data-testid="home-page">
+    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50" data-testid="home-page">
       <div className="container mx-auto p-6">
         <div className="flex justify-between items-center mb-8">
           <div>
