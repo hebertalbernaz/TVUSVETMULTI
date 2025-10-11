@@ -941,8 +941,9 @@ function SettingsPage() {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="clinic">Dados da Clínica</TabsTrigger>
+            <TabsTrigger value="letterhead">Timbrado</TabsTrigger>
             <TabsTrigger value="templates">Textos Padrão</TabsTrigger>
             <TabsTrigger value="references">Valores de Referência</TabsTrigger>
           </TabsList>
