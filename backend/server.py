@@ -157,6 +157,22 @@ class Settings(BaseModel):
     veterinarian_name: Optional[str] = None
     crmv: Optional[str] = None
 
+class LicenseCode(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    code: str
+    is_used: bool = False
+    used_at: Optional[datetime] = None
+    expires_at: Optional[datetime] = None
+
+class LicenseStatus(BaseModel):
+    is_active: bool
+    needs_activation: bool
+    expires_at: Optional[datetime] = None
+    remaining_codes: int
+    is_open_license: bool  # True when all 200 codes are consumed
+
 # Helper functions
 def prepare_for_mongo(data: dict) -> dict:
     """Convert datetime objects to ISO strings for MongoDB storage"""
