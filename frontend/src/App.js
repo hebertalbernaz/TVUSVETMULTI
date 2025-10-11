@@ -94,6 +94,20 @@ function HomePage() {
     }
   };
 
+  const handleInstallClick = async () => {
+    if (!deferredPrompt) return;
+
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    
+    if (outcome === 'accepted') {
+      toast.success('App instalado com sucesso!');
+    }
+    
+    setDeferredPrompt(null);
+    setShowInstallButton(false);
+  };
+
   const initializeDefaults = async () => {
     try {
       await axios.post(`${API}/initialize-defaults`);
