@@ -952,6 +952,10 @@ function SettingsPage() {
             {settings && <ClinicSettings settings={settings} onSave={saveSettings} />}
           </TabsContent>
 
+          <TabsContent value="letterhead">
+            {settings && <LetterheadSettings settings={settings} onSave={saveSettings} />}
+          </TabsContent>
+
           <TabsContent value="templates">
             <TemplatesManager templates={templates} onUpdate={loadTemplates} />
           </TabsContent>
