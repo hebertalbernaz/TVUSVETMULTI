@@ -87,7 +87,7 @@ function HomePage() {
             <Button
               onClick={() => setShowNewPatient(true)}
               data-testid="new-patient-button"
-              className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800"
+              className="bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700"
             >
               <Plus className="mr-2 h-4 w-4" />
               Novo Paciente
