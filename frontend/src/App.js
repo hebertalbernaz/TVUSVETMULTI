@@ -13,7 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { AlertCircle, Plus, Search, FileText, Settings, Download, Image as ImageIcon, Trash2, Edit, Save, X } from 'lucide-react';
+import { AlertCircle, Plus, Search, FileText, Settings, Download, Image as ImageIcon, Trash2, Edit, Save, X, Upload } from 'lucide-react';
 import { toast } from 'sonner';
 import { Toaster } from '@/components/ui/sonner';
 
