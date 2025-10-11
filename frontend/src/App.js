@@ -1028,6 +1028,86 @@ function ClinicSettings({ settings, onSave }) {
   );
 }
 
+function LetterheadSettings({ settings, onSave }) {
+  const [uploading, setUploading] = useState(false);
+  const [letterheadFile, setLetterheadFile] = useState(null);
+
+  const handleFileUpload = async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    setUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const response = await axios.post(`${API}/upload-letterhead`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+
+      // Update settings with letterhead path
+      await onSave({
+        ...settings,
+        letterhead_path: response.data.path
+      });
+
+      setLetterheadFile(file.name);
+      toast.success('Timbrado carregado com sucesso!');
+    } catch (error) {
+      toast.error('Erro ao fazer upload do timbrado');
+      console.error(error);
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Timbrado do Laudo</CardTitle>
+        <CardDescription>
+          Configure o cabeçalho que aparecerá nos laudos exportados
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div>
+          <Label htmlFor="letterhead-upload">Upload do Timbrado (PDF/DOCX)</Label>
+          <p className="text-sm text-gray-500 mb-2">
+            Faça upload de um arquivo com o cabeçalho da sua clínica
+          </p>
+          <div className="flex gap-2">
+            <Input
+              id="letterhead-upload"
+              type="file"
+              accept=".pdf,.docx,.doc"
+              onChange={handleFileUpload}
+              disabled={uploading}
+              data-testid="letterhead-upload-input"
+            />
+            {uploading && <span className="text-sm text-gray-500">Carregando...</span>}
+          </div>
+          {settings.letterhead_path && (
+            <p className="text-sm text-green-600 mt-2">
+              ✓ Timbrado configurado: {settings.letterhead_path.split('/').pop()}
+            </p>
+          )}
+        </div>
+
+        <Separator />
+
+        <div>
+          <p className="text-sm text-gray-600 mb-3">
+            <strong>Nota:</strong> O sistema utilizará as informações dos "Dados da Clínica" 
+            para criar o cabeçalho do laudo automaticamente. Você pode personalizar esses dados na aba anterior.
+          </p>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
 function TemplatesManager({ templates, onUpdate }) {
   const [showNew, setShowNew] = useState(false);
   const [newTemplate, setNewTemplate] = useState({ organ: '', category: 'normal', text: '' });
