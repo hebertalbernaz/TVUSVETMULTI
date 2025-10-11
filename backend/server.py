@@ -112,13 +112,17 @@ class TemplateText(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     organ: str
     category: str  # "normal", "finding", "conclusion"
-    text: str
+    title: Optional[str] = None  # Título curto que aparece na lista
+    text: str  # Texto completo/detalhado
+    formatting: Optional[Dict[str, bool]] = {}  # {"bold": True, "italic": False}
     order: int = 0
 
 class TemplateTextCreate(BaseModel):
     organ: str
     category: str
+    title: Optional[str] = None
     text: str
+    formatting: Optional[Dict[str, bool]] = {}
     order: int = 0
 
 class ReferenceValue(BaseModel):
@@ -446,35 +450,79 @@ async def export_exam_to_docx(exam_id: str):
     
     settings = await db.settings.find_one({"id": "global_settings"}, {"_id": 0})
     
-    # Create document
-    doc = Document()
+    # Create document - use letterhead template if available
+    letterhead_path = settings.get("letterhead_path") if settings else None
     
-    # Add letterhead if configured
-    if settings and settings.get("clinic_name"):
-        heading = doc.add_heading(settings["clinic_name"], level=1)
-        heading.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
-        
-        if settings.get("clinic_address"):
-            addr = doc.add_paragraph(settings["clinic_address"])
-            addr.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
-        
-        if settings.get("veterinarian_name") or settings.get("crmv"):
-            vet_info = f"{settings.get('veterinarian_name', '')} - CRMV: {settings.get('crmv', '')}"
-            vet_para = doc.add_paragraph(vet_info)
-            vet_para.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
-        
-        doc.add_paragraph()  # Spacer
+    if letterhead_path and Path(letterhead_path).exists():
+        # Use the uploaded letterhead as template
+        # The letterhead has header/footer, and empty body - perfect for inserting laudo
+        try:
+            doc = Document(letterhead_path)
+            logging.info(f"Using letterhead template: {letterhead_path}")
+            # Clear any existing content in body (should be empty already)
+            for para in doc.paragraphs[:]:
+                para.clear()
+        except Exception as e:
+            logging.error(f"Error loading letterhead: {e}")
+            doc = Document()
+            # Fallback to text-based header
+            if settings and settings.get("clinic_name"):
+                heading = doc.add_heading(settings["clinic_name"], level=1)
+                heading.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
+                if settings.get("clinic_address"):
+                    addr = doc.add_paragraph(settings["clinic_address"])
+                    addr.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
+                if settings.get("veterinarian_name") or settings.get("crmv"):
+                    vet_info = f"{settings.get('veterinarian_name', '')} - CRMV: {settings.get('crmv', '')}"
+                    vet_para = doc.add_paragraph(vet_info)
+                    vet_para.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
+                doc.add_paragraph()
+    else:
+        # No letterhead file, create new document with text header
+        doc = Document()
+        if settings and settings.get("clinic_name"):
+            heading = doc.add_heading(settings["clinic_name"], level=1)
+            heading.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
+            
+            if settings.get("clinic_address"):
+                addr = doc.add_paragraph(settings["clinic_address"])
+                addr.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
+            
+            if settings.get("veterinarian_name") or settings.get("crmv"):
+                vet_info = f"{settings.get('veterinarian_name', '')} - CRMV: {settings.get('crmv', '')}"
+                vet_para = doc.add_paragraph(vet_info)
+                vet_para.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
+            
+            doc.add_paragraph()  # Spacer
     
     # Add title
-    title = doc.add_heading('LAUDO DE ULTRASSONOGRAFIA ABDOMINAL', level=1)
-    title.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
+    try:
+        title = doc.add_heading('LAUDO DE ULTRASSONOGRAFIA ABDOMINAL', level=1)
+        title.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
+    except KeyError:
+        para = doc.add_paragraph('LAUDO DE ULTRASSONOGRAFIA ABDOMINAL')
+        run = para.runs[0]
+        run.bold = True
+        run.font.size = Pt(16)
+        para.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
+    
     doc.add_paragraph()
     
     # Patient information
-    doc.add_heading('Dados do Paciente', level=2)
-    doc.add_paragraph(f"Nome: {patient['name']}")
-    doc.add_paragraph(f"Espécie: {'Canino' if patient['species'] == 'dog' else 'Felino'}")
-    doc.add_paragraph(f"Raça: {patient['breed']}")
+    try:
+        doc.add_heading('Dados do Paciente', level=2)
+    except KeyError:
+        para = doc.add_paragraph('Dados do Paciente')
+        run = para.runs[0]
+        run.bold = True
+        run.font.size = Pt(14)
+        para.alignment = WD_PARAGRAPH_ALIGNMENT.LEFT
+    para = doc.add_paragraph(f"Nome: {patient['name']}")
+    para.alignment = WD_PARAGRAPH_ALIGNMENT.JUSTIFY
+    para = doc.add_paragraph(f"Espécie: {'Canino' if patient['species'] == 'dog' else 'Felino'}")
+    para.alignment = WD_PARAGRAPH_ALIGNMENT.JUSTIFY
+    para = doc.add_paragraph(f"Raça: {patient['breed']}")
+    para.alignment = WD_PARAGRAPH_ALIGNMENT.JUSTIFY
     
     # Use exam weight if available, otherwise use patient weight
     weight = exam.get('exam_weight') or patient['weight']
@@ -493,61 +541,162 @@ async def export_exam_to_docx(exam_id: str):
     doc.add_paragraph(f"Data do Exame: {exam_date.strftime('%d/%m/%Y')}")
     doc.add_paragraph()
     
-    # Organ findings with measurements
-    doc.add_heading('Achados Ultrassonográficos', level=2)
+    # Organ findings with humanized text
+    try:
+        doc.add_heading('Achados Ultrassonográficos', level=2)
+    except KeyError:
+        # Timbrado template may not have Heading styles
+        para = doc.add_paragraph('Achados Ultrassonográficos')
+        run = para.runs[0]
+        run.bold = True
+        run.font.size = Pt(14)
+        para.alignment = WD_PARAGRAPH_ALIGNMENT.LEFT
     
     organs_data = exam.get('organs_data', [])
     for organ_data in organs_data:
         if organ_data.get('report_text') or organ_data.get('measurements'):
-            doc.add_heading(organ_data['organ_name'], level=3)
+            # Try to add heading, fallback to bold paragraph if style doesn't exist
+            try:
+                doc.add_heading(organ_data['organ_name'], level=3)
+            except KeyError:
+                para = doc.add_paragraph(organ_data['organ_name'])
+                run = para.runs[0]
+                run.bold = True
+                run.font.size = Pt(12)
+                para.alignment = WD_PARAGRAPH_ALIGNMENT.LEFT
             
-            # Add measurements if present
+            # Generate humanized text with measurements
             measurements = organ_data.get('measurements', {})
-            if measurements:
-                measurements_para = doc.add_paragraph()
-                measurements_para.add_run("Medidas: ").bold = True
-                
-                measurements_list = []
-                for mtype, mdata in measurements.items():
-                    measurements_list.append(f"{mtype}: {mdata['value']} {mdata['unit']}")
-                
-                measurements_para.add_run(", ".join(measurements_list))
-                doc.add_paragraph()
+            report_text = organ_data.get('report_text', '')
             
-            # Add report text
-            if organ_data.get('report_text'):
-                doc.add_paragraph(organ_data['report_text'])
+            # Format measurements string
+            measurements_str = ""
+            if measurements:
+                measurement_values = list(measurements.values())
+                organ_name = organ_data['organ_name']
+                
+                # Check if it's adrenal (special format)
+                if 'Adrenal' in organ_name:
+                    if len(measurement_values) >= 3:
+                        measurements_str = f"{measurement_values[0]['value']}x{measurement_values[1]['value']}x{measurement_values[2]['value']} cm"
+                    else:
+                        measurements_str = ' x '.join([f"{m['value']}" for m in measurement_values]) + " cm"
+                elif len(measurement_values) == 1:
+                    measurements_str = f"{measurement_values[0]['value']} cm"
+                else:
+                    measurements_str = ' x '.join([f"{m['value']}" for m in measurement_values]) + " cm"
+            
+            # Process report text with {MEDIDA} placeholder and formatting
+            if report_text:
+                # Replace {MEDIDA} with actual measurements
+                if '{MEDIDA}' in report_text and measurements_str:
+                    processed_text = report_text.replace('{MEDIDA}', f"medindo aproximadamente {measurements_str}")
+                else:
+                    # If no {MEDIDA} but has measurements, add at start
+                    if measurements_str:
+                        processed_text = f"{organ_data['organ_name']} medindo aproximadamente {measurements_str}, {report_text}"
+                    else:
+                        processed_text = f"{organ_data['organ_name']} {report_text}"
+                
+                # Create paragraph with formatting
+                para = doc.add_paragraph()
+                para.alignment = WD_PARAGRAPH_ALIGNMENT.JUSTIFY
+                
+                # Process markdown-style formatting
+                import re
+                
+                # Split by bold (**text**)
+                parts = re.split(r'(\*\*.*?\*\*)', processed_text)
+                for part in parts:
+                    if part.startswith('**') and part.endswith('**'):
+                        # Bold text
+                        run = para.add_run(part[2:-2])
+                        run.bold = True
+                    else:
+                        # Check for italic (*text*)
+                        italic_parts = re.split(r'(\*.*?\*)', part)
+                        for ipart in italic_parts:
+                            if ipart.startswith('*') and ipart.endswith('*') and not ipart.startswith('**'):
+                                run = para.add_run(ipart[1:-1])
+                                run.italic = True
+                            elif ipart:
+                                para.add_run(ipart)
+            elif measurements_str:
+                # Only measurements, no report text
+                para = doc.add_paragraph(f"{organ_data['organ_name']} medindo aproximadamente {measurements_str}.")
+                para.alignment = WD_PARAGRAPH_ALIGNMENT.JUSTIFY
             
             doc.add_paragraph()
     
-    # Add images (6 per page)
+    # Add images in 2 columns at the end
     images = exam.get('images', [])
     if images:
         doc.add_page_break()
-        doc.add_heading('Imagens do Exame', level=2)
+        
+        # Add title
+        try:
+            title_para = doc.add_heading('Imagens do Exame', level=2)
+            title_para.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
+        except KeyError:
+            para = doc.add_paragraph('Imagens do Exame')
+            run = para.runs[0]
+            run.bold = True
+            run.font.size = Pt(14)
+            para.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
+        
+        # Add table for 2-column layout
+        from docx.oxml import OxmlElement
+        from docx.oxml.ns import qn
         
         image_count = 0
-        for img in images:
-            try:
-                filepath = Path(img['path'])
-                if filepath.exists():
-                    # Add image with caption
-                    img_paragraph = doc.add_paragraph()
-                    run = img_paragraph.add_run()
-                    run.add_picture(str(filepath), width=Inches(2.5))
-                    
-                    # Add caption if organ is specified
-                    if img.get('organ'):
-                        caption = doc.add_paragraph(img['organ'], style='Caption')
-                        caption.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
-                    
-                    image_count += 1
-                    
-                    # Add page break after 6 images
-                    if image_count % 6 == 0 and image_count < len(images):
-                        doc.add_page_break()
-            except Exception as e:
-                logging.error(f"Error adding image to document: {e}")
+        for i in range(0, len(images), 6):  # Process 6 images at a time
+            # Add spacing before table if not first
+            if i > 0:
+                doc.add_paragraph()
+            
+            # Create table: 3 rows x 2 columns for images
+            table = doc.add_table(rows=3, cols=2)
+            table.autofit = False
+            table.allow_autofit = False
+            
+            # Set column widths (make them equal)
+            for row in table.rows:
+                for cell in row.cells:
+                    cell.width = Inches(3.2)
+            
+            batch = images[i:i+6]
+            for idx, img in enumerate(batch):
+                try:
+                    filepath = Path(img['path'])
+                    if filepath.exists():
+                        row_idx = idx // 2
+                        col_idx = idx % 2
+                        cell = table.rows[row_idx].cells[col_idx]
+                        
+                        # Add image to cell with better sizing
+                        paragraph = cell.paragraphs[0]
+                        paragraph.clear()  # Clear any default content
+                        run = paragraph.add_run()
+                        
+                        # Use slightly smaller image size for better fit
+                        run.add_picture(str(filepath), width=Inches(2.5))
+                        paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
+                        
+                        # Add caption
+                        if img.get('organ'):
+                            caption_para = cell.add_paragraph(img['organ'])
+                            caption_para.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
+                            for run in caption_para.runs:
+                                run.font.size = Pt(8)
+                                run.font.italic = True
+                        
+                        image_count += 1
+                except Exception as e:
+                    logging.error(f"Error adding image to document: {e}")
+            
+            # Add page break after 6 images if there are more
+            if i + 6 < len(images):
+                doc.add_page_break()
     
     # Save document
     output_path = REPORTS_DIR / f"laudo_{exam_id}.docx"
@@ -583,19 +732,25 @@ async def initialize_defaults():
             TemplateText(
                 organ=organ,
                 category="normal",
-                text=f"{organ} com dimensões, contornos, ecogenicidade e ecotextura preservados.",
+                title="Normal",
+                text=f"com dimensões, contornos, ecogenicidade e ecotextura preservados.",
+                formatting={},
                 order=idx * 10
             ),
             TemplateText(
                 organ=organ,
                 category="finding",
-                text=f"{organ} apresenta alteração de ecogenicidade.",
+                title="Alteração de ecogenicidade",
+                text=f"apresenta alteração de ecogenicidade, com áreas hiperecóicas difusas.",
+                formatting={},
                 order=idx * 10 + 1
             ),
             TemplateText(
                 organ=organ,
                 category="finding",
-                text=f"{organ} com aumento de dimensões.",
+                title="Aumento de dimensões",
+                text=f"com aumento de dimensões em relação aos padrões de referência para a espécie.",
+                formatting={},
                 order=idx * 10 + 2
             )
         ])

@@ -66,14 +66,17 @@ function HomePage() {
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50" data-testid="home-page">
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-50" data-testid="home-page">
       <div className="container mx-auto p-6">
         <div className="flex justify-between items-center mb-8">
-          <div>
-            <h1 className="text-5xl font-bold bg-gradient-to-r from-teal-600 to-emerald-600 bg-clip-text text-transparent mb-2" style={{ fontFamily: 'Manrope, sans-serif' }}>
-              TVUSVET Laudos
-            </h1>
-            <p className="text-gray-600">Sistema de Ultrassonografia Veterinária</p>
+          <div className="flex items-center gap-4">
+            <img src="/logo.svg" alt="TVUSVET Logo" className="h-16" />
+            <div>
+              <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent" style={{ fontFamily: 'Manrope, sans-serif' }}>
+                TVUSVET Laudos
+              </h1>
+              <p className="text-gray-600">Sistema de Ultrassonografia Veterinária</p>
+            </div>
           </div>
           <div className="flex gap-3">
             <Button
@@ -87,7 +90,7 @@ function HomePage() {
             <Button
               onClick={() => setShowNewPatient(true)}
               data-testid="new-patient-button"
-              className="bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700"
+              className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 h-12 text-base px-6"
             >
               <Plus className="mr-2 h-4 w-4" />
               Novo Paciente
@@ -138,6 +141,7 @@ function PatientCard({ patient, onUpdate }) {
   const [exams, setExams] = useState([]);
   const [showExams, setShowExams] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
+  const [showNewExamDialog, setShowNewExamDialog] = useState(false);
   const navigate = useNavigate();
 
   const loadExams = async () => {
@@ -150,15 +154,8 @@ function PatientCard({ patient, onUpdate }) {
     }
   };
 
-  const createNewExam = async () => {
-    try {
-      const response = await axios.post(`${API}/exams`, {
-        patient_id: patient.id
-      });
-      navigate(`/exam/${response.data.id}`);
-    } catch (error) {
-      toast.error('Erro ao criar exame');
-    }
+  const createNewExam = () => {
+    setShowNewExamDialog(true);
   };
 
   return (
@@ -175,6 +172,31 @@ function PatientCard({ patient, onUpdate }) {
             >
               <Edit className="h-4 w-4" />
             </Button>
+            <Button
+              onClick={async () => {
+                if (window.confirm(`Tem certeza que deseja excluir o paciente ${patient.name}? Todos os exames deste paciente também serão excluídos. Esta ação não pode ser desfeita.`)) {
+                  try {
+                    // Delete all exams for this patient first
+                    const examsResponse = await axios.get(`${API}/exams?patient_id=${patient.id}`);
+                    for (const exam of examsResponse.data) {
+                      await axios.delete(`${API}/exams/${exam.id}`);
+                    }
+                    // Delete patient
+                    await axios.delete(`${API}/patients/${patient.id}`);
+                    toast.success('Paciente excluído com sucesso');
+                    onUpdate();
+                  } catch (error) {
+                    toast.error('Erro ao excluir paciente');
+                  }
+                }
+              }}
+              variant="ghost"
+              size="sm"
+              className="text-red-600 hover:text-red-700 hover:bg-red-50"
+              data-testid={`delete-patient-${patient.id}`}
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
             <Badge variant={patient.species === 'dog' ? 'default' : 'secondary'}>
               {patient.species === 'dog' ? 'Cão' : 'Gato'}
             </Badge>
@@ -189,19 +211,19 @@ function PatientCard({ patient, onUpdate }) {
         <div className="flex gap-2">
           <Button
             onClick={createNewExam}
-            className="flex-1"
+            className="flex-1 h-12 text-base"
             data-testid={`new-exam-button-${patient.id}`}
           >
-            <Plus className="mr-2 h-4 w-4" />
+            <Plus className="mr-2 h-5 w-5" />
             Novo Exame
           </Button>
           <Button
             onClick={loadExams}
             variant="outline"
-            className="flex-1"
+            className="flex-1 h-12 text-base"
             data-testid={`view-exams-button-${patient.id}`}
           >
-            <FileText className="mr-2 h-4 w-4" />
+            <FileText className="mr-2 h-5 w-5" />
             Ver Exames ({exams.length})
           </Button>
         </div>
@@ -217,15 +239,44 @@ function PatientCard({ patient, onUpdate }) {
               ) : (
                 <div className="space-y-3">
                   {exams.map(exam => (
-                    <Card key={exam.id} className="p-4 hover:bg-gray-50 cursor-pointer" onClick={() => navigate(`/exam/${exam.id}`)}>
+                    <Card key={exam.id} className="p-4 hover:bg-gray-50">
                       <div className="flex justify-between items-center">
-                        <div>
+                        <div className="flex-1 cursor-pointer" onClick={() => navigate(`/exam/${exam.id}`)}>
                           <p className="font-medium">Exame de {new Date(exam.exam_date).toLocaleDateString('pt-BR')}</p>
-                          <p className="text-sm text-gray-500">{exam.organs_data?.length || 0} órgãos avaliados</p>
+                          <p className="text-sm text-gray-500">
+                            {exam.organs_data?.length || 0} órgãos • {exam.images?.length || 0} imagens
+                          </p>
                         </div>
-                        <Button variant="ghost" size="sm">
-                          <FileText className="h-4 w-4" />
-                        </Button>
+                        <div className="flex gap-2">
+                          <Button 
+                            variant="ghost" 
+                            size="sm"
+                            onClick={() => navigate(`/exam/${exam.id}`)}
+                            data-testid={`open-exam-${exam.id}`}
+                          >
+                            <FileText className="h-4 w-4" />
+                          </Button>
+                          <Button 
+                            variant="ghost" 
+                            size="sm"
+                            className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                            onClick={async (e) => {
+                              e.stopPropagation();
+                              if (window.confirm('Tem certeza que deseja excluir este exame? Esta ação não pode ser desfeita.')) {
+                                try {
+                                  await axios.delete(`${API}/exams/${exam.id}`);
+                                  toast.success('Exame excluído com sucesso');
+                                  loadExams();
+                                } catch (error) {
+                                  toast.error('Erro ao excluir exame');
+                                }
+                              }
+                            }}
+                            data-testid={`delete-exam-${exam.id}`}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </div>
                     </Card>
                   ))}
@@ -248,8 +299,89 @@ function PatientCard({ patient, onUpdate }) {
             />
           </DialogContent>
         </Dialog>
+
+        <Dialog open={showNewExamDialog} onOpenChange={setShowNewExamDialog}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Novo Exame</DialogTitle>
+              <DialogDescription>Configure a data e peso do exame</DialogDescription>
+            </DialogHeader>
+            <NewExamForm 
+              patient={patient}
+              onSuccess={(examId) => {
+                setShowNewExamDialog(false);
+                navigate(`/exam/${examId}`);
+              }} 
+              onCancel={() => setShowNewExamDialog(false)} 
+            />
+          </DialogContent>
+        </Dialog>
       </CardContent>
     </Card>
+  );
+}
+
+function NewExamForm({ patient, onSuccess, onCancel }) {
+  const [examDate, setExamDate] = useState(new Date().toISOString().split('T')[0]);
+  const [examWeight, setExamWeight] = useState(patient.weight);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await axios.post(`${API}/exams`, {
+        patient_id: patient.id,
+        exam_date: new Date(examDate).toISOString(),
+        exam_weight: parseFloat(examWeight)
+      });
+      toast.success('Exame criado com sucesso!');
+      onSuccess(response.data.id);
+    } catch (error) {
+      toast.error('Erro ao criar exame');
+      console.error(error);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4" data-testid="new-exam-form">
+      <div>
+        <Label htmlFor="exam_date">Data do Exame *</Label>
+        <Input
+          id="exam_date"
+          type="date"
+          value={examDate}
+          onChange={(e) => setExamDate(e.target.value)}
+          required
+          className="h-12"
+          data-testid="exam-date-input"
+        />
+      </div>
+
+      <div>
+        <Label htmlFor="exam_weight">Peso do Animal (kg) *</Label>
+        <Input
+          id="exam_weight"
+          type="number"
+          step="0.1"
+          value={examWeight}
+          onChange={(e) => setExamWeight(e.target.value)}
+          required
+          className="h-12"
+          data-testid="exam-weight-form-input"
+        />
+        <p className="text-sm text-gray-500 mt-1">
+          Peso cadastrado: {patient.weight} kg
+        </p>
+      </div>
+
+      <div className="flex gap-2 pt-4">
+        <Button type="submit" className="flex-1 h-12" data-testid="create-exam-button">
+          Criar Exame
+        </Button>
+        <Button type="button" variant="outline" onClick={onCancel} className="flex-1 h-12">
+          Cancelar
+        </Button>
+      </div>
+    </form>
   );
 }
 
@@ -558,11 +690,11 @@ function ExamPage() {
   const organTemplates = templates.filter(t => t.organ === currentOrgan?.organ_name);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50" data-testid="exam-page">
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-50" data-testid="exam-page">
       <div className="container mx-auto p-6">
         <div className="flex justify-between items-start mb-6">
           <div className="flex-1">
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-teal-600 to-emerald-600 bg-clip-text text-transparent mb-2" style={{ fontFamily: 'Manrope, sans-serif' }}>
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent mb-2" style={{ fontFamily: 'Manrope, sans-serif' }}>
               Exame de {patient.name}
             </h1>
             <p className="text-gray-600 mb-3">
@@ -582,73 +714,39 @@ function ExamPage() {
               />
             </div>
           </div>
-          <div className="flex gap-2">
-            <Button onClick={saveExam} variant="outline" data-testid="save-exam-button">
-              <Save className="mr-2 h-4 w-4" />
+          <div className="flex gap-3">
+            <Button onClick={saveExam} variant="outline" className="h-12 text-base px-6" data-testid="save-exam-button">
+              <Save className="mr-2 h-5 w-5" />
               Salvar
             </Button>
-            <Button onClick={exportToDocx} data-testid="export-button">
-              <Download className="mr-2 h-4 w-4" />
+            <Button onClick={exportToDocx} className="h-12 text-base px-6" data-testid="export-button">
+              <Download className="mr-2 h-5 w-5" />
               Exportar Laudo
             </Button>
-            <Button onClick={() => navigate('/')} variant="outline">
-              <X className="mr-2 h-4 w-4" />
+            <Button onClick={() => navigate('/')} variant="outline" className="h-12 text-base px-6">
+              <X className="mr-2 h-5 w-5" />
               Fechar
             </Button>
           </div>
         </div>
 
         <div className="grid grid-cols-12 gap-4">
-          <div className="col-span-2">
+          {/* Área de Imagens - À ESQUERDA */}
+          <div className="col-span-5">
             <Card>
-              <CardHeader>
-                <CardTitle className="text-sm">Órgãos</CardTitle>
-              </CardHeader>
-              <CardContent className="p-2">
-                <ScrollArea className="h-[calc(100vh-300px)]">
-                  <div className="space-y-1">
-                    {organsData.map((organ, idx) => (
-                      <Button
-                        key={idx}
-                        variant={currentOrganIndex === idx ? 'default' : 'ghost'}
-                        className="w-full justify-start text-left text-xs py-2 h-auto"
-                        onClick={() => setCurrentOrganIndex(idx)}
-                        data-testid={`organ-button-${idx}`}
-                      >
-                        {organ.organ_name}
-                      </Button>
-                    ))}
-                  </div>
-                </ScrollArea>
-              </CardContent>
-            </Card>
-          </div>
-
-          <div className="col-span-7">
-            {currentOrgan && (
-              <OrganEditor
-                organ={currentOrgan}
-                templates={organTemplates}
-                referenceValues={referenceValues.filter(rv => rv.organ === currentOrgan.organ_name && rv.species === patient.species && rv.size === patient.size)}
-                onChange={(field, value) => updateOrganData(currentOrganIndex, field, value)}
-              />
-            )}
-          </div>
-
-          <div className="col-span-3">
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-sm flex items-center justify-between">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base flex items-center justify-between">
                   <span>Imagens ({examImages.length})</span>
                   <label htmlFor="image-upload">
                     <Button
-                      size="sm"
+                      size="default"
                       variant="outline"
                       onClick={() => document.getElementById('image-upload').click()}
                       disabled={uploading}
+                      className="h-10"
                       data-testid="upload-images-button"
                     >
-                      <Upload className="h-3 w-3 mr-1" />
+                      <Upload className="h-4 w-4 mr-2" />
                       {uploading ? 'Enviando...' : 'Adicionar'}
                     </Button>
                   </label>
@@ -662,35 +760,81 @@ function ExamPage() {
                   />
                 </CardTitle>
               </CardHeader>
-              <CardContent className="p-2">
+              <CardContent className="p-3">
                 <ScrollArea className="h-[calc(100vh-300px)]">
-                  <div className="space-y-2">
+                  <div className="space-y-3">
                     {examImages.map((image) => (
                       <div key={image.id} className="relative group">
                         <img
                           src={`${API}/images/${image.id}`}
                           alt={image.organ || 'Exam image'}
-                          className="w-full h-32 object-cover rounded border"
+                          className="w-full h-auto max-h-96 object-contain rounded-lg border-2 border-gray-200 hover:border-purple-400 transition-colors bg-gray-50"
                         />
                         <Button
                           size="sm"
                           variant="destructive"
-                          className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity h-6 w-6 p-0"
+                          className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity h-8 w-8 p-0 rounded-full shadow-lg"
                           onClick={() => handleDeleteImage(image.id)}
                           data-testid={`delete-image-${image.id}`}
                         >
-                          <X className="h-3 w-3" />
+                          <X className="h-4 w-4" />
                         </Button>
                         {image.organ && (
-                          <p className="text-xs text-center mt-1 text-gray-600">{image.organ}</p>
+                          <div className="mt-2 p-2 bg-purple-50 rounded text-center">
+                            <p className="text-sm font-medium text-purple-900">{image.organ}</p>
+                          </div>
                         )}
                       </div>
                     ))}
-                    {examImages.length === 0 && (
-                      <p className="text-xs text-gray-500 text-center py-8">
+                  </div>
+                  {examImages.length === 0 && (
+                    <div className="flex flex-col items-center justify-center py-16 text-center">
+                      <ImageIcon className="h-20 w-20 text-gray-300 mb-4" />
+                      <p className="text-base text-gray-600 font-medium">
                         Nenhuma imagem adicionada
                       </p>
-                    )}
+                      <p className="text-sm text-gray-400 mt-2">
+                        Clique em "Adicionar" para fazer upload
+                      </p>
+                    </div>
+                  )}
+                </ScrollArea>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Editor de Órgão - AO CENTRO */}
+          <div className="col-span-5">
+            {currentOrgan && (
+              <OrganEditor
+                organ={currentOrgan}
+                templates={organTemplates}
+                referenceValues={referenceValues.filter(rv => rv.organ === currentOrgan.organ_name && rv.species === patient.species && rv.size === patient.size)}
+                onChange={(field, value) => updateOrganData(currentOrganIndex, field, value)}
+              />
+            )}
+          </div>
+
+          {/* Sidebar de Órgãos - À DIREITA */}
+          <div className="col-span-2">
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm">Órgãos</CardTitle>
+              </CardHeader>
+              <CardContent className="p-2">
+                <ScrollArea className="h-[calc(100vh-300px)]">
+                  <div className="space-y-1">
+                    {organsData.map((organ, idx) => (
+                      <Button
+                        key={idx}
+                        variant={currentOrganIndex === idx ? 'default' : 'ghost'}
+                        className="w-full justify-start text-left text-xs py-3 h-auto min-h-[44px]"
+                        onClick={() => setCurrentOrganIndex(idx)}
+                        data-testid={`organ-button-${idx}`}
+                      >
+                        {organ.organ_name}
+                      </Button>
+                    ))}
                   </div>
                 </ScrollArea>
               </CardContent>
@@ -744,25 +888,28 @@ function OrganEditor({ organ, templates, referenceValues, onChange }) {
       </CardHeader>
       <CardContent>
         <Tabs defaultValue="measurements">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="measurements">Medidas</TabsTrigger>
-            <TabsTrigger value="findings">Achados</TabsTrigger>
-            <TabsTrigger value="report">Laudo</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-3 h-12">
+            <TabsTrigger value="measurements" className="text-base">Medidas</TabsTrigger>
+            <TabsTrigger value="findings" className="text-base">Achados</TabsTrigger>
+            <TabsTrigger value="report" className="text-base">Laudo</TabsTrigger>
           </TabsList>
 
           <TabsContent value="measurements" className="space-y-4">
             <div className="space-y-4">
-              <h3 className="font-medium">Adicionar Medida</h3>
-              <MeasurementInput onAdd={addMeasurement} referenceValues={referenceValues} />
+              <h3 className="font-medium text-lg">Adicionar Medida</h3>
+              <MeasurementInput 
+                onAdd={addMeasurement} 
+                existingMeasurementsCount={Object.keys(measurements).length}
+              />
 
               {Object.keys(measurements).length > 0 && (
-                <div className="space-y-2 mt-4">
-                  <h4 className="font-medium">Medidas Registradas</h4>
-                  {Object.entries(measurements).map(([type, data]) => (
-                    <div key={type} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                <div className="space-y-3 mt-6">
+                  <h4 className="font-medium text-lg">Medidas Registradas</h4>
+                  {Object.entries(measurements).map(([type, data], index) => (
+                    <div key={type} className="flex items-center justify-between p-4 bg-purple-50 rounded-lg border border-purple-200">
                       <div>
-                        <span className="font-medium capitalize">{type}: </span>
-                        <span>{data.value} {data.unit}</span>
+                        <span className="font-semibold text-purple-900">Medida {index + 1}: </span>
+                        <span className="text-lg">{data.value} cm</span>
                       </div>
                       {data.is_abnormal && (
                         <Badge variant="destructive" className="flex items-center gap-1">
@@ -779,20 +926,28 @@ function OrganEditor({ organ, templates, referenceValues, onChange }) {
 
           <TabsContent value="findings" className="space-y-4">
             <div className="space-y-2">
-              <h3 className="font-medium mb-3">Textos Pré-definidos</h3>
+              <h3 className="font-medium text-lg mb-3">Achados Pré-definidos</h3>
               <ScrollArea className="h-[400px]">
                 <div className="space-y-2">
                   {templates.map(template => (
                     <Button
                       key={template.id}
                       variant="outline"
-                      className="w-full justify-start text-left h-auto py-3"
+                      className="w-full justify-start text-left h-auto py-3 px-4"
                       onClick={() => insertTemplate(template.text)}
                       data-testid={`template-button-${template.id}`}
                     >
-                      {template.text}
+                      <div className="flex flex-col items-start w-full">
+                        <span className="font-semibold text-purple-900">{template.title || template.text.substring(0, 50)}</span>
+                        <span className="text-xs text-gray-500 mt-1">{template.category}</span>
+                      </div>
                     </Button>
                   ))}
+                  {templates.length === 0 && (
+                    <p className="text-sm text-gray-500 text-center py-8">
+                      Nenhum texto pré-definido para este órgão
+                    </p>
+                  )}
                 </div>
               </ScrollArea>
             </div>
@@ -821,64 +976,36 @@ function OrganEditor({ organ, templates, referenceValues, onChange }) {
   );
 }
 
-function MeasurementInput({ onAdd, referenceValues }) {
-  const [type, setType] = useState('');
+function MeasurementInput({ onAdd, existingMeasurementsCount }) {
   const [value, setValue] = useState('');
-  const [unit, setUnit] = useState('cm');
 
   const handleAdd = () => {
-    if (type && value) {
-      onAdd(type, value, unit);
-      setType('');
+    if (value) {
+      const measurementNumber = existingMeasurementsCount + 1;
+      onAdd(`medida_${measurementNumber}`, value, 'cm');
       setValue('');
     }
   };
 
-  const availableTypes = [...new Set(referenceValues.map(rv => rv.measurement_type))];
-
   return (
-    <div className="grid grid-cols-12 gap-2">
-      <div className="col-span-4">
-        <Label>Tipo de Medida</Label>
-        <Input
-          placeholder="Ex: comprimento"
-          value={type}
-          onChange={(e) => setType(e.target.value)}
-          list="measurement-types"
-          data-testid="measurement-type-input"
-        />
-        <datalist id="measurement-types">
-          {availableTypes.map(t => (
-            <option key={t} value={t} />
-          ))}
-        </datalist>
-      </div>
-      <div className="col-span-3">
-        <Label>Valor</Label>
+    <div className="grid grid-cols-12 gap-3">
+      <div className="col-span-8">
+        <Label className="text-base">Medida {existingMeasurementsCount + 1} (cm)</Label>
         <Input
           type="number"
           step="0.1"
+          placeholder="Digite o valor em cm"
           value={value}
           onChange={(e) => setValue(e.target.value)}
+          className="h-12 text-base"
           data-testid="measurement-value-input"
         />
       </div>
-      <div className="col-span-3">
-        <Label>Unidade</Label>
-        <Select value={unit} onValueChange={setUnit}>
-          <SelectTrigger data-testid="measurement-unit-select">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="cm">cm</SelectItem>
-            <SelectItem value="mm">mm</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-      <div className="col-span-2">
+      <div className="col-span-4">
         <Label>&nbsp;</Label>
-        <Button onClick={handleAdd} className="w-full" data-testid="add-measurement-button">
-          <Plus className="h-4 w-4" />
+        <Button onClick={handleAdd} className="w-full h-12 text-base" data-testid="add-measurement-button">
+          <Plus className="h-5 w-5 mr-2" />
+          Adicionar
         </Button>
       </div>
     </div>
@@ -890,6 +1017,7 @@ function SettingsPage() {
   const [templates, setTemplates] = useState([]);
   const [referenceValues, setReferenceValues] = useState([]);
   const [activeTab, setActiveTab] = useState('clinic');
+  const [isDeleting, setIsDeleting] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -935,11 +1063,46 @@ function SettingsPage() {
     }
   };
 
+  const deleteAllData = async () => {
+    if (!window.confirm('⚠️ ATENÇÃO: Tem certeza que deseja excluir TODOS os pacientes e exames? Esta ação é IRREVERSÍVEL!')) {
+      return;
+    }
+
+    if (!window.confirm('Esta é sua última chance! Confirma a exclusão de TODOS os dados?')) {
+      return;
+    }
+
+    setIsDeleting(true);
+    try {
+      // Get all patients
+      const patientsRes = await axios.get(`${API}/patients`);
+      const patients = patientsRes.data;
+
+      // Delete all exams for each patient
+      for (const patient of patients) {
+        const examsRes = await axios.get(`${API}/exams?patient_id=${patient.id}`);
+        for (const exam of examsRes.data) {
+          await axios.delete(`${API}/exams/${exam.id}`);
+        }
+        // Delete patient
+        await axios.delete(`${API}/patients/${patient.id}`);
+      }
+
+      toast.success('Todos os dados foram excluídos com sucesso');
+      navigate('/');
+    } catch (error) {
+      toast.error('Erro ao excluir dados');
+      console.error(error);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50" data-testid="settings-page">
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-50" data-testid="settings-page">
       <div className="container mx-auto p-6">
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-teal-600 to-emerald-600 bg-clip-text text-transparent" style={{ fontFamily: 'Manrope, sans-serif' }}>Configurações</h1>
+          <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent" style={{ fontFamily: 'Manrope, sans-serif' }}>Configurações</h1>
           <Button onClick={() => navigate('/')} variant="outline">
             <X className="mr-2 h-4 w-4" />
             Voltar
@@ -947,11 +1110,12 @@ function SettingsPage() {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="clinic">Dados da Clínica</TabsTrigger>
             <TabsTrigger value="letterhead">Timbrado</TabsTrigger>
             <TabsTrigger value="templates">Textos Padrão</TabsTrigger>
             <TabsTrigger value="references">Valores de Referência</TabsTrigger>
+            <TabsTrigger value="danger" className="text-red-600">Zona de Perigo</TabsTrigger>
           </TabsList>
 
           <TabsContent value="clinic">
@@ -968,6 +1132,43 @@ function SettingsPage() {
 
           <TabsContent value="references">
             <ReferenceValuesManager values={referenceValues} onUpdate={loadReferenceValues} />
+          </TabsContent>
+
+          <TabsContent value="danger">
+            <Card className="border-red-200">
+              <CardHeader>
+                <CardTitle className="text-red-600">⚠️ Zona de Perigo</CardTitle>
+                <CardDescription>
+                  Ações irreversíveis que excluirão permanentemente seus dados
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+                  <h3 className="font-semibold text-red-900 mb-2">Excluir Todos os Dados</h3>
+                  <p className="text-sm text-red-700 mb-4">
+                    Esta ação irá excluir permanentemente TODOS os pacientes, exames e imagens do sistema. 
+                    Esta ação NÃO pode ser desfeita!
+                  </p>
+                  <Button
+                    onClick={deleteAllData}
+                    disabled={isDeleting}
+                    variant="destructive"
+                    className="w-full h-12 text-base"
+                    data-testid="delete-all-data-button"
+                  >
+                    {isDeleting ? 'Excluindo...' : 'Excluir Todos os Pacientes e Exames'}
+                  </Button>
+                </div>
+
+                <div className="p-4 bg-gray-50 border border-gray-200 rounded-lg">
+                  <h3 className="font-semibold text-gray-900 mb-2">Backup Recomendado</h3>
+                  <p className="text-sm text-gray-600">
+                    Antes de excluir dados, recomendamos exportar todos os laudos importantes. 
+                    Uma vez excluídos, os dados não podem ser recuperados.
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
         </Tabs>
       </div>
@@ -1069,6 +1270,21 @@ function LetterheadSettings({ settings, onSave }) {
     }
   };
 
+  const handleRemoveLetterhead = async () => {
+    if (window.confirm('Tem certeza que deseja remover o timbrado configurado?')) {
+      try {
+        await onSave({
+          ...settings,
+          letterhead_path: null
+        });
+        setLetterheadFile(null);
+        toast.success('Timbrado removido com sucesso!');
+      } catch (error) {
+        toast.error('Erro ao remover timbrado');
+      }
+    }
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -1095,9 +1311,26 @@ function LetterheadSettings({ settings, onSave }) {
             {uploading && <span className="text-sm text-gray-500">Carregando...</span>}
           </div>
           {settings.letterhead_path && (
-            <p className="text-sm text-green-600 mt-2">
-              ✓ Timbrado configurado: {settings.letterhead_path.split('/').pop()}
-            </p>
+            <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-lg flex items-center justify-between">
+              <div>
+                <p className="text-sm text-green-700 font-medium">
+                  ✓ Timbrado Configurado
+                </p>
+                <p className="text-xs text-green-600 mt-1">
+                  {settings.letterhead_path.split('/').pop()}
+                </p>
+              </div>
+              <Button
+                onClick={handleRemoveLetterhead}
+                variant="outline"
+                size="sm"
+                className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                data-testid="remove-letterhead-button"
+              >
+                <Trash2 className="h-4 w-4 mr-1" />
+                Remover
+              </Button>
+            </div>
           )}
         </div>
 
@@ -1116,7 +1349,7 @@ function LetterheadSettings({ settings, onSave }) {
 
 function TemplatesManager({ templates, onUpdate }) {
   const [showNew, setShowNew] = useState(false);
-  const [newTemplate, setNewTemplate] = useState({ organ: '', category: 'normal', text: '' });
+  const [newTemplate, setNewTemplate] = useState({ organ: '', category: 'normal', title: '', text: '' });
 
   const createTemplate = async () => {
     try {
@@ -1161,10 +1394,10 @@ function TemplatesManager({ templates, onUpdate }) {
       </CardHeader>
       <CardContent>
         {showNew && (
-          <Card className="mb-4 p-4 bg-blue-50">
+          <Card className="mb-4 p-4 bg-purple-50 border-purple-200">
             <div className="space-y-3">
               <Select value={newTemplate.organ} onValueChange={(value) => setNewTemplate({ ...newTemplate, organ: value })}>
-                <SelectTrigger>
+                <SelectTrigger className="h-12">
                   <SelectValue placeholder="Selecione o órgão" />
                 </SelectTrigger>
                 <SelectContent>
@@ -1173,15 +1406,100 @@ function TemplatesManager({ templates, onUpdate }) {
                   ))}
                 </SelectContent>
               </Select>
-              <Textarea
-                placeholder="Digite o texto padrão..."
-                value={newTemplate.text}
-                onChange={(e) => setNewTemplate({ ...newTemplate, text: e.target.value })}
-                rows={3}
-              />
+              
+              <div>
+                <Label>Título (aparece na lista)</Label>
+                <Input
+                  placeholder="Ex: Normal, Alteração de ecogenicidade..."
+                  value={newTemplate.title}
+                  onChange={(e) => setNewTemplate({ ...newTemplate, title: e.target.value })}
+                  className="h-12 mt-1"
+                />
+              </div>
+              
+              <div>
+                <Label>Texto Completo (aparece no laudo)</Label>
+                <div className="mt-1 space-y-2">
+                  {/* Toolbar de Formatação */}
+                  <div className="flex gap-2 p-2 bg-white rounded-lg border">
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        const textarea = document.getElementById('template-text');
+                        const start = textarea.selectionStart;
+                        const end = textarea.selectionEnd;
+                        const selectedText = newTemplate.text.substring(start, end);
+                        if (selectedText) {
+                          const newText = newTemplate.text.substring(0, start) + 
+                                        `**${selectedText}**` + 
+                                        newTemplate.text.substring(end);
+                          setNewTemplate({ ...newTemplate, text: newText });
+                        }
+                      }}
+                      className="h-8"
+                      title="Negrito"
+                    >
+                      <strong>N</strong>
+                    </Button>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        const textarea = document.getElementById('template-text');
+                        const start = textarea.selectionStart;
+                        const end = textarea.selectionEnd;
+                        const selectedText = newTemplate.text.substring(start, end);
+                        if (selectedText) {
+                          const newText = newTemplate.text.substring(0, start) + 
+                                        `*${selectedText}*` + 
+                                        newTemplate.text.substring(end);
+                          setNewTemplate({ ...newTemplate, text: newText });
+                        }
+                      }}
+                      className="h-8"
+                      title="Itálico"
+                    >
+                      <em>I</em>
+                    </Button>
+                    <Separator orientation="vertical" className="h-6" />
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        const textarea = document.getElementById('template-text');
+                        const start = textarea.selectionStart;
+                        const newText = newTemplate.text.substring(0, start) + 
+                                      '{MEDIDA}' + 
+                                      newTemplate.text.substring(start);
+                        setNewTemplate({ ...newTemplate, text: newText });
+                      }}
+                      className="h-8 text-purple-600"
+                      title="Inserir placeholder de medida"
+                    >
+                      + Valor de Medida
+                    </Button>
+                  </div>
+                  
+                  <Textarea
+                    id="template-text"
+                    placeholder="Digite o texto detalhado. Use {MEDIDA} para inserir valores de medidas automaticamente..."
+                    value={newTemplate.text}
+                    onChange={(e) => setNewTemplate({ ...newTemplate, text: e.target.value })}
+                    rows={6}
+                  />
+                  <p className="text-xs text-gray-500">
+                    <strong>Dica:</strong> Use ** para negrito, * para itálico, e {'{MEDIDA}'} para inserir medidas automaticamente
+                  </p>
+                </div>
+              </div>
+              
               <div className="flex gap-2">
-                <Button onClick={createTemplate} size="sm">Salvar</Button>
-                <Button onClick={() => setShowNew(false)} variant="outline" size="sm">Cancelar</Button>
+                <Button onClick={createTemplate} size="default" className="h-10">Salvar</Button>
+                <Button onClick={() => setShowNew(false)} variant="outline" size="default" className="h-10">Cancelar</Button>
               </div>
             </div>
           </Card>
@@ -1194,8 +1512,12 @@ function TemplatesManager({ templates, onUpdate }) {
                 <h3 className="font-semibold text-lg mb-2">{organ}</h3>
                 <div className="space-y-2 ml-4">
                   {organTemplates.map(template => (
-                    <div key={template.id} className="flex justify-between items-start p-3 bg-gray-50 rounded-lg">
-                      <p className="text-sm flex-1">{template.text}</p>
+                    <div key={template.id} className="flex justify-between items-start p-3 bg-purple-50 rounded-lg border border-purple-200">
+                      <div className="flex-1">
+                        <p className="text-sm font-semibold text-purple-900 mb-1">{template.title || 'Sem título'}</p>
+                        <p className="text-sm text-gray-700">{template.text}</p>
+                        <p className="text-xs text-gray-500 mt-1">Categoria: {template.category}</p>
+                      </div>
                       <Button
                         onClick={() => deleteTemplate(template.id)}
                         variant="ghost"
