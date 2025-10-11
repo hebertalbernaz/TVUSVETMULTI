@@ -1,52 +1,1131 @@
-import { useEffect } from "react";
-import "@/App.css";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import axios from "axios";
+import React, { useState, useEffect } from 'react';
+import { BrowserRouter, Routes, Route, Link, useNavigate, useParams } from 'react-router-dom';
+import axios from 'axios';
+import '@/App.css';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { AlertCircle, Plus, Search, FileText, Settings, Download, Image as ImageIcon, Trash2, Edit, Save, X } from 'lucide-react';
+import { toast } from 'sonner';
+import { Toaster } from '@/components/ui/sonner';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
-const Home = () => {
-  const helloWorldApi = async () => {
+const ORGANS = [
+  'Estômago', 'Fígado', 'Baço', 'Rim Esquerdo', 'Rim Direito',
+  'Vesícula Urinária', 'Adrenal Esquerda', 'Adrenal Direita',
+  'Duodeno', 'Jejuno', 'Cólon', 'Ceco', 'Íleo', 'Linfonodos'
+];
+
+const REPRODUCTIVE_ORGANS_MALE = ['Testículo Direito', 'Testículo Esquerdo', 'Próstata'];
+const REPRODUCTIVE_ORGANS_FEMALE = ['Corpo Uterino', 'Corno Uterino Direito', 'Corno Uterino Esquerdo', 'Ovário Direito', 'Ovário Esquerdo'];
+
+function HomePage() {
+  const [patients, setPatients] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [showNewPatient, setShowNewPatient] = useState(false);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    loadPatients();
+    initializeDefaults();
+  }, []);
+
+  const initializeDefaults = async () => {
     try {
-      const response = await axios.get(`${API}/`);
-      console.log(response.data.message);
-    } catch (e) {
-      console.error(e, `errored out requesting / api`);
+      await axios.post(`${API}/initialize-defaults`);
+    } catch (error) {
+      console.error('Error initializing defaults:', error);
     }
   };
 
-  useEffect(() => {
-    helloWorldApi();
-  }, []);
+  const loadPatients = async () => {
+    try {
+      const response = await axios.get(`${API}/patients`);
+      setPatients(response.data);
+    } catch (error) {
+      toast.error('Erro ao carregar pacientes');
+      console.error(error);
+    }
+  };
+
+  const filteredPatients = patients.filter(p =>
+    p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    p.breed.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (p.owner_name && p.owner_name.toLowerCase().includes(searchTerm.toLowerCase()))
+  );
 
   return (
-    <div>
-      <header className="App-header">
-        <a
-          className="App-link"
-          href="https://emergent.sh"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <img src="https://avatars.githubusercontent.com/in/1201222?s=120&u=2686cf91179bbafbc7a71bfbc43004cf9ae1acea&v=4" />
-        </a>
-        <p className="mt-5">Building something incredible ~!</p>
-      </header>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50" data-testid="home-page">
+      <div className="container mx-auto p-6">
+        <div className="flex justify-between items-center mb-8">
+          <div>
+            <h1 className="text-4xl font-bold text-gray-800 mb-2" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>VetUSG</h1>
+            <p className="text-gray-600">Sistema de Laudos de Ultrassonografia Veterinária</p>
+          </div>
+          <div className="flex gap-3">
+            <Button
+              onClick={() => navigate('/settings')}
+              variant="outline"
+              data-testid="settings-button"
+            >
+              <Settings className="mr-2 h-4 w-4" />
+              Configurações
+            </Button>
+            <Button
+              onClick={() => setShowNewPatient(true)}
+              data-testid="new-patient-button"
+              className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800"
+            >
+              <Plus className="mr-2 h-4 w-4" />
+              Novo Paciente
+            </Button>
+          </div>
+        </div>
+
+        <div className="mb-6">
+          <div className="relative">
+            <Search className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
+            <Input
+              placeholder="Buscar por nome do paciente, raça ou tutor..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10"
+              data-testid="search-input"
+            />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {filteredPatients.map(patient => (
+            <PatientCard key={patient.id} patient={patient} onUpdate={loadPatients} />
+          ))}
+        </div>
+
+        {filteredPatients.length === 0 && (
+          <Card className="p-12 text-center">
+            <p className="text-gray-500">Nenhum paciente encontrado</p>
+          </Card>
+        )}
+      </div>
+
+      <Dialog open={showNewPatient} onOpenChange={setShowNewPatient}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Novo Paciente</DialogTitle>
+            <DialogDescription>Cadastre um novo paciente no sistema</DialogDescription>
+          </DialogHeader>
+          <NewPatientForm onSuccess={() => { setShowNewPatient(false); loadPatients(); }} onCancel={() => setShowNewPatient(false)} />
+        </DialogContent>
+      </Dialog>
     </div>
   );
-};
+}
+
+function PatientCard({ patient, onUpdate }) {
+  const [exams, setExams] = useState([]);
+  const [showExams, setShowExams] = useState(false);
+  const navigate = useNavigate();
+
+  const loadExams = async () => {
+    try {
+      const response = await axios.get(`${API}/exams?patient_id=${patient.id}`);
+      setExams(response.data);
+      setShowExams(true);
+    } catch (error) {
+      toast.error('Erro ao carregar exames');
+    }
+  };
+
+  const createNewExam = async () => {
+    try {
+      const response = await axios.post(`${API}/exams`, {
+        patient_id: patient.id
+      });
+      navigate(`/exam/${response.data.id}`);
+    } catch (error) {
+      toast.error('Erro ao criar exame');
+    }
+  };
+
+  return (
+    <Card className="hover:shadow-lg transition-shadow" data-testid={`patient-card-${patient.id}`}>
+      <CardHeader>
+        <CardTitle className="flex items-center justify-between">
+          <span>{patient.name}</span>
+          <Badge variant={patient.species === 'dog' ? 'default' : 'secondary'}>
+            {patient.species === 'dog' ? 'Cão' : 'Gato'}
+          </Badge>
+        </CardTitle>
+        <CardDescription>
+          {patient.breed} • {patient.weight}kg • {patient.size === 'small' ? 'Pequeno' : patient.size === 'medium' ? 'Médio' : 'Grande'}
+          {patient.owner_name && ` • Tutor: ${patient.owner_name}`}
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div className="flex gap-2">
+          <Button
+            onClick={createNewExam}
+            className="flex-1"
+            data-testid={`new-exam-button-${patient.id}`}
+          >
+            <Plus className="mr-2 h-4 w-4" />
+            Novo Exame
+          </Button>
+          <Button
+            onClick={loadExams}
+            variant="outline"
+            className="flex-1"
+            data-testid={`view-exams-button-${patient.id}`}
+          >
+            <FileText className="mr-2 h-4 w-4" />
+            Ver Exames ({exams.length})
+          </Button>
+        </div>
+
+        <Dialog open={showExams} onOpenChange={setShowExams}>
+          <DialogContent className="max-w-3xl">
+            <DialogHeader>
+              <DialogTitle>Exames de {patient.name}</DialogTitle>
+            </DialogHeader>
+            <ScrollArea className="max-h-[60vh]">
+              {exams.length === 0 ? (
+                <p className="text-gray-500 text-center py-8">Nenhum exame realizado</p>
+              ) : (
+                <div className="space-y-3">
+                  {exams.map(exam => (
+                    <Card key={exam.id} className="p-4 hover:bg-gray-50 cursor-pointer" onClick={() => navigate(`/exam/${exam.id}`)}>
+                      <div className="flex justify-between items-center">
+                        <div>
+                          <p className="font-medium">Exame de {new Date(exam.exam_date).toLocaleDateString('pt-BR')}</p>
+                          <p className="text-sm text-gray-500">{exam.organs_data?.length || 0} órgãos avaliados</p>
+                        </div>
+                        <Button variant="ghost" size="sm">
+                          <FileText className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </ScrollArea>
+          </DialogContent>
+        </Dialog>
+      </CardContent>
+    </Card>
+  );
+}
+
+function NewPatientForm({ onSuccess, onCancel }) {
+  const [formData, setFormData] = useState({
+    name: '',
+    species: 'dog',
+    breed: '',
+    weight: '',
+    size: 'medium',
+    sex: 'male',
+    is_neutered: false,
+    owner_name: ''
+  });
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      await axios.post(`${API}/patients`, {
+        ...formData,
+        weight: parseFloat(formData.weight)
+      });
+      toast.success('Paciente cadastrado com sucesso!');
+      onSuccess();
+    } catch (error) {
+      toast.error('Erro ao cadastrar paciente');
+      console.error(error);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4" data-testid="new-patient-form">
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <Label htmlFor="name">Nome do Paciente *</Label>
+          <Input
+            id="name"
+            value={formData.name}
+            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+            required
+            data-testid="patient-name-input"
+          />
+        </div>
+        <div>
+          <Label htmlFor="owner_name">Nome do Tutor</Label>
+          <Input
+            id="owner_name"
+            value={formData.owner_name}
+            onChange={(e) => setFormData({ ...formData, owner_name: e.target.value })}
+            data-testid="owner-name-input"
+          />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <Label htmlFor="species">Espécie *</Label>
+          <Select value={formData.species} onValueChange={(value) => setFormData({ ...formData, species: value })}>
+            <SelectTrigger data-testid="species-select">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="dog">Cão</SelectItem>
+              <SelectItem value="cat">Gato</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <div>
+          <Label htmlFor="breed">Raça *</Label>
+          <Input
+            id="breed"
+            value={formData.breed}
+            onChange={(e) => setFormData({ ...formData, breed: e.target.value })}
+            required
+            data-testid="breed-input"
+          />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-3 gap-4">
+        <div>
+          <Label htmlFor="weight">Peso (kg) *</Label>
+          <Input
+            id="weight"
+            type="number"
+            step="0.1"
+            value={formData.weight}
+            onChange={(e) => setFormData({ ...formData, weight: e.target.value })}
+            required
+            data-testid="weight-input"
+          />
+        </div>
+        <div>
+          <Label htmlFor="size">Porte *</Label>
+          <Select value={formData.size} onValueChange={(value) => setFormData({ ...formData, size: value })}>
+            <SelectTrigger data-testid="size-select">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="small">Pequeno</SelectItem>
+              <SelectItem value="medium">Médio</SelectItem>
+              <SelectItem value="large">Grande</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <div>
+          <Label htmlFor="sex">Sexo *</Label>
+          <Select value={formData.sex} onValueChange={(value) => setFormData({ ...formData, sex: value })}>
+            <SelectTrigger data-testid="sex-select">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="male">Macho</SelectItem>
+              <SelectItem value="female">Fêmea</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      <div className="flex items-center space-x-2">
+        <input
+          type="checkbox"
+          id="is_neutered"
+          checked={formData.is_neutered}
+          onChange={(e) => setFormData({ ...formData, is_neutered: e.target.checked })}
+          className="rounded"
+          data-testid="neutered-checkbox"
+        />
+        <Label htmlFor="is_neutered">Paciente Castrado</Label>
+      </div>
+
+      <div className="flex gap-2 pt-4">
+        <Button type="submit" className="flex-1" data-testid="save-patient-button">Salvar</Button>
+        <Button type="button" variant="outline" onClick={onCancel} className="flex-1">Cancelar</Button>
+      </div>
+    </form>
+  );
+}
+
+function ExamPage() {
+  const { examId } = useParams();
+  const [exam, setExam] = useState(null);
+  const [patient, setPatient] = useState(null);
+  const [templates, setTemplates] = useState([]);
+  const [referenceValues, setReferenceValues] = useState([]);
+  const [organsData, setOrgansData] = useState([]);
+  const [currentOrganIndex, setCurrentOrganIndex] = useState(0);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    loadExamData();
+  }, [examId]);
+
+  const loadExamData = async () => {
+    try {
+      const examRes = await axios.get(`${API}/exams/${examId}`);
+      setExam(examRes.data);
+
+      const patientRes = await axios.get(`${API}/patients/${examRes.data.patient_id}`);
+      setPatient(patientRes.data);
+
+      const templatesRes = await axios.get(`${API}/templates`);
+      setTemplates(templatesRes.data);
+
+      const refValuesRes = await axios.get(`${API}/reference-values`);
+      setReferenceValues(refValuesRes.data);
+
+      // Initialize organs data
+      const allOrgans = [...ORGANS];
+      if (!patientRes.data.is_neutered) {
+        if (patientRes.data.sex === 'male') {
+          allOrgans.push(...REPRODUCTIVE_ORGANS_MALE);
+        } else {
+          allOrgans.push(...REPRODUCTIVE_ORGANS_FEMALE);
+        }
+      }
+
+      const initialOrgansData = allOrgans.map(organ => ({
+        organ_name: organ,
+        measurements: {},
+        selected_findings: [],
+        custom_notes: '',
+        report_text: ''
+      }));
+
+      if (examRes.data.organs_data && examRes.data.organs_data.length > 0) {
+        setOrgansData(examRes.data.organs_data);
+      } else {
+        setOrgansData(initialOrgansData);
+      }
+    } catch (error) {
+      toast.error('Erro ao carregar dados do exame');
+      console.error(error);
+    }
+  };
+
+  const saveExam = async () => {
+    try {
+      await axios.put(`${API}/exams/${examId}`, {
+        organs_data: organsData
+      });
+      toast.success('Exame salvo com sucesso!');
+    } catch (error) {
+      toast.error('Erro ao salvar exame');
+      console.error(error);
+    }
+  };
+
+  const updateOrganData = (index, field, value) => {
+    const newOrgansData = [...organsData];
+    newOrgansData[index] = {
+      ...newOrgansData[index],
+      [field]: value
+    };
+    setOrgansData(newOrgansData);
+  };
+
+  const exportToDocx = async () => {
+    try {
+      await saveExam();
+      const response = await axios.get(`${API}/exams/${examId}/export`, {
+        responseType: 'blob'
+      });
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `laudo_${patient?.name || 'paciente'}.docx`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      toast.success('Laudo exportado com sucesso!');
+    } catch (error) {
+      toast.error('Erro ao exportar laudo');
+      console.error(error);
+    }
+  };
+
+  if (!exam || !patient) {
+    return <div className="flex items-center justify-center h-screen">Carregando...</div>;
+  }
+
+  const currentOrgan = organsData[currentOrganIndex];
+  const organTemplates = templates.filter(t => t.organ === currentOrgan?.organ_name);
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50" data-testid="exam-page">
+      <div className="container mx-auto p-6">
+        <div className="flex justify-between items-center mb-6">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-800" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
+              Exame de {patient.name}
+            </h1>
+            <p className="text-gray-600">
+              {patient.breed} • {patient.weight}kg • {new Date(exam.exam_date).toLocaleDateString('pt-BR')}
+            </p>
+          </div>
+          <div className="flex gap-2">
+            <Button onClick={saveExam} variant="outline" data-testid="save-exam-button">
+              <Save className="mr-2 h-4 w-4" />
+              Salvar
+            </Button>
+            <Button onClick={exportToDocx} data-testid="export-button">
+              <Download className="mr-2 h-4 w-4" />
+              Exportar Laudo
+            </Button>
+            <Button onClick={() => navigate('/')} variant="outline">
+              <X className="mr-2 h-4 w-4" />
+              Fechar
+            </Button>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-12 gap-6">
+          <div className="col-span-3">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Órgãos</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ScrollArea className="h-[calc(100vh-300px)]">
+                  <div className="space-y-1">
+                    {organsData.map((organ, idx) => (
+                      <Button
+                        key={idx}
+                        variant={currentOrganIndex === idx ? 'default' : 'ghost'}
+                        className="w-full justify-start text-left"
+                        onClick={() => setCurrentOrganIndex(idx)}
+                        data-testid={`organ-button-${idx}`}
+                      >
+                        {organ.organ_name}
+                      </Button>
+                    ))}
+                  </div>
+                </ScrollArea>
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className="col-span-9">
+            {currentOrgan && (
+              <OrganEditor
+                organ={currentOrgan}
+                templates={organTemplates}
+                referenceValues={referenceValues.filter(rv => rv.organ === currentOrgan.organ_name && rv.species === patient.species && rv.size === patient.size)}
+                onChange={(field, value) => updateOrganData(currentOrganIndex, field, value)}
+              />
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function OrganEditor({ organ, templates, referenceValues, onChange }) {
+  const [measurements, setMeasurements] = useState(organ.measurements || {});
+  const [reportText, setReportText] = useState(organ.report_text || '');
+
+  const addMeasurement = (type, value, unit) => {
+    const newMeasurements = {
+      ...measurements,
+      [type]: {
+        value: parseFloat(value),
+        unit,
+        is_abnormal: checkIfAbnormal(type, parseFloat(value), unit)
+      }
+    };
+    setMeasurements(newMeasurements);
+    onChange('measurements', newMeasurements);
+  };
+
+  const checkIfAbnormal = (type, value, unit) => {
+    const ref = referenceValues.find(rv => rv.measurement_type === type && rv.unit === unit);
+    if (!ref) return false;
+    return value < ref.min_value || value > ref.max_value;
+  };
+
+  const insertTemplate = (templateText) => {
+    const newText = reportText ? `${reportText}\n${templateText}` : templateText;
+    setReportText(newText);
+    onChange('report_text', newText);
+  };
+
+  return (
+    <Card data-testid="organ-editor">
+      <CardHeader>
+        <CardTitle>{organ.organ_name}</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <Tabs defaultValue="measurements">
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="measurements">Medidas</TabsTrigger>
+            <TabsTrigger value="findings">Achados</TabsTrigger>
+            <TabsTrigger value="report">Laudo</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="measurements" className="space-y-4">
+            <div className="space-y-4">
+              <h3 className="font-medium">Adicionar Medida</h3>
+              <MeasurementInput onAdd={addMeasurement} referenceValues={referenceValues} />
+
+              {Object.keys(measurements).length > 0 && (
+                <div className="space-y-2 mt-4">
+                  <h4 className="font-medium">Medidas Registradas</h4>
+                  {Object.entries(measurements).map(([type, data]) => (
+                    <div key={type} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                      <div>
+                        <span className="font-medium capitalize">{type}: </span>
+                        <span>{data.value} {data.unit}</span>
+                      </div>
+                      {data.is_abnormal && (
+                        <Badge variant="destructive" className="flex items-center gap-1">
+                          <AlertCircle className="h-3 w-3" />
+                          Fora do padrão
+                        </Badge>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="findings" className="space-y-4">
+            <div className="space-y-2">
+              <h3 className="font-medium mb-3">Textos Pré-definidos</h3>
+              <ScrollArea className="h-[400px]">
+                <div className="space-y-2">
+                  {templates.map(template => (
+                    <Button
+                      key={template.id}
+                      variant="outline"
+                      className="w-full justify-start text-left h-auto py-3"
+                      onClick={() => insertTemplate(template.text)}
+                      data-testid={`template-button-${template.id}`}
+                    >
+                      {template.text}
+                    </Button>
+                  ))}
+                </div>
+              </ScrollArea>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="report" className="space-y-4">
+            <div>
+              <Label htmlFor="report-text">Texto do Laudo</Label>
+              <Textarea
+                id="report-text"
+                value={reportText}
+                onChange={(e) => {
+                  setReportText(e.target.value);
+                  onChange('report_text', e.target.value);
+                }}
+                rows={15}
+                placeholder="Digite ou selecione textos pré-definidos..."
+                className="mt-2"
+                data-testid="report-textarea"
+              />
+            </div>
+          </TabsContent>
+        </Tabs>
+      </CardContent>
+    </Card>
+  );
+}
+
+function MeasurementInput({ onAdd, referenceValues }) {
+  const [type, setType] = useState('');
+  const [value, setValue] = useState('');
+  const [unit, setUnit] = useState('cm');
+
+  const handleAdd = () => {
+    if (type && value) {
+      onAdd(type, value, unit);
+      setType('');
+      setValue('');
+    }
+  };
+
+  const availableTypes = [...new Set(referenceValues.map(rv => rv.measurement_type))];
+
+  return (
+    <div className="grid grid-cols-12 gap-2">
+      <div className="col-span-4">
+        <Label>Tipo de Medida</Label>
+        <Input
+          placeholder="Ex: comprimento"
+          value={type}
+          onChange={(e) => setType(e.target.value)}
+          list="measurement-types"
+          data-testid="measurement-type-input"
+        />
+        <datalist id="measurement-types">
+          {availableTypes.map(t => (
+            <option key={t} value={t} />
+          ))}
+        </datalist>
+      </div>
+      <div className="col-span-3">
+        <Label>Valor</Label>
+        <Input
+          type="number"
+          step="0.1"
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+          data-testid="measurement-value-input"
+        />
+      </div>
+      <div className="col-span-3">
+        <Label>Unidade</Label>
+        <Select value={unit} onValueChange={setUnit}>
+          <SelectTrigger data-testid="measurement-unit-select">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="cm">cm</SelectItem>
+            <SelectItem value="mm">mm</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+      <div className="col-span-2">
+        <Label>&nbsp;</Label>
+        <Button onClick={handleAdd} className="w-full" data-testid="add-measurement-button">
+          <Plus className="h-4 w-4" />
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+function SettingsPage() {
+  const [settings, setSettings] = useState(null);
+  const [templates, setTemplates] = useState([]);
+  const [referenceValues, setReferenceValues] = useState([]);
+  const [activeTab, setActiveTab] = useState('clinic');
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    loadSettings();
+    loadTemplates();
+    loadReferenceValues();
+  }, []);
+
+  const loadSettings = async () => {
+    try {
+      const response = await axios.get(`${API}/settings`);
+      setSettings(response.data);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const loadTemplates = async () => {
+    try {
+      const response = await axios.get(`${API}/templates`);
+      setTemplates(response.data);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const loadReferenceValues = async () => {
+    try {
+      const response = await axios.get(`${API}/reference-values`);
+      setReferenceValues(response.data);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const saveSettings = async (data) => {
+    try {
+      await axios.put(`${API}/settings`, data);
+      toast.success('Configurações salvas!');
+      loadSettings();
+    } catch (error) {
+      toast.error('Erro ao salvar configurações');
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50" data-testid="settings-page">
+      <div className="container mx-auto p-6">
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-3xl font-bold text-gray-800" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>Configurações</h1>
+          <Button onClick={() => navigate('/')} variant="outline">
+            <X className="mr-2 h-4 w-4" />
+            Voltar
+          </Button>
+        </div>
+
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="clinic">Dados da Clínica</TabsTrigger>
+            <TabsTrigger value="templates">Textos Padrão</TabsTrigger>
+            <TabsTrigger value="references">Valores de Referência</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="clinic">
+            {settings && <ClinicSettings settings={settings} onSave={saveSettings} />}
+          </TabsContent>
+
+          <TabsContent value="templates">
+            <TemplatesManager templates={templates} onUpdate={loadTemplates} />
+          </TabsContent>
+
+          <TabsContent value="references">
+            <ReferenceValuesManager values={referenceValues} onUpdate={loadReferenceValues} />
+          </TabsContent>
+        </Tabs>
+      </div>
+    </div>
+  );
+}
+
+function ClinicSettings({ settings, onSave }) {
+  const [formData, setFormData] = useState(settings);
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    onSave(formData);
+  };
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Informações da Clínica</CardTitle>
+        <CardDescription>Configure os dados que aparecerão no cabeçalho dos laudos</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <Label htmlFor="clinic_name">Nome da Clínica</Label>
+            <Input
+              id="clinic_name"
+              value={formData.clinic_name || ''}
+              onChange={(e) => setFormData({ ...formData, clinic_name: e.target.value })}
+              data-testid="clinic-name-input"
+            />
+          </div>
+          <div>
+            <Label htmlFor="clinic_address">Endereço</Label>
+            <Input
+              id="clinic_address"
+              value={formData.clinic_address || ''}
+              onChange={(e) => setFormData({ ...formData, clinic_address: e.target.value })}
+              data-testid="clinic-address-input"
+            />
+          </div>
+          <div>
+            <Label htmlFor="veterinarian_name">Nome do Veterinário</Label>
+            <Input
+              id="veterinarian_name"
+              value={formData.veterinarian_name || ''}
+              onChange={(e) => setFormData({ ...formData, veterinarian_name: e.target.value })}
+              data-testid="vet-name-input"
+            />
+          </div>
+          <div>
+            <Label htmlFor="crmv">CRMV</Label>
+            <Input
+              id="crmv"
+              value={formData.crmv || ''}
+              onChange={(e) => setFormData({ ...formData, crmv: e.target.value })}
+              data-testid="crmv-input"
+            />
+          </div>
+          <Button type="submit" data-testid="save-clinic-settings-button">Salvar Configurações</Button>
+        </form>
+      </CardContent>
+    </Card>
+  );
+}
+
+function TemplatesManager({ templates, onUpdate }) {
+  const [showNew, setShowNew] = useState(false);
+  const [newTemplate, setNewTemplate] = useState({ organ: '', category: 'normal', text: '' });
+
+  const createTemplate = async () => {
+    try {
+      await axios.post(`${API}/templates`, newTemplate);
+      toast.success('Texto adicionado!');
+      setShowNew(false);
+      setNewTemplate({ organ: '', category: 'normal', text: '' });
+      onUpdate();
+    } catch (error) {
+      toast.error('Erro ao adicionar texto');
+    }
+  };
+
+  const deleteTemplate = async (id) => {
+    try {
+      await axios.delete(`${API}/templates/${id}`);
+      toast.success('Texto removido!');
+      onUpdate();
+    } catch (error) {
+      toast.error('Erro ao remover texto');
+    }
+  };
+
+  const groupedTemplates = templates.reduce((acc, template) => {
+    if (!acc[template.organ]) {
+      acc[template.organ] = [];
+    }
+    acc[template.organ].push(template);
+    return acc;
+  }, {});
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex justify-between items-center">
+          <span>Textos Padrão por Órgão</span>
+          <Button onClick={() => setShowNew(!showNew)} size="sm" data-testid="add-template-button">
+            <Plus className="mr-2 h-4 w-4" />
+            Adicionar
+          </Button>
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        {showNew && (
+          <Card className="mb-4 p-4 bg-blue-50">
+            <div className="space-y-3">
+              <Select value={newTemplate.organ} onValueChange={(value) => setNewTemplate({ ...newTemplate, organ: value })}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione o órgão" />
+                </SelectTrigger>
+                <SelectContent>
+                  {ORGANS.map(organ => (
+                    <SelectItem key={organ} value={organ}>{organ}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Textarea
+                placeholder="Digite o texto padrão..."
+                value={newTemplate.text}
+                onChange={(e) => setNewTemplate({ ...newTemplate, text: e.target.value })}
+                rows={3}
+              />
+              <div className="flex gap-2">
+                <Button onClick={createTemplate} size="sm">Salvar</Button>
+                <Button onClick={() => setShowNew(false)} variant="outline" size="sm">Cancelar</Button>
+              </div>
+            </div>
+          </Card>
+        )}
+
+        <ScrollArea className="h-[500px]">
+          <div className="space-y-4">
+            {Object.entries(groupedTemplates).map(([organ, organTemplates]) => (
+              <div key={organ}>
+                <h3 className="font-semibold text-lg mb-2">{organ}</h3>
+                <div className="space-y-2 ml-4">
+                  {organTemplates.map(template => (
+                    <div key={template.id} className="flex justify-between items-start p-3 bg-gray-50 rounded-lg">
+                      <p className="text-sm flex-1">{template.text}</p>
+                      <Button
+                        onClick={() => deleteTemplate(template.id)}
+                        variant="ghost"
+                        size="sm"
+                        className="ml-2"
+                        data-testid={`delete-template-${template.id}`}
+                      >
+                        <Trash2 className="h-4 w-4 text-red-500" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+                <Separator className="mt-4" />
+              </div>
+            ))}
+          </div>
+        </ScrollArea>
+      </CardContent>
+    </Card>
+  );
+}
+
+function ReferenceValuesManager({ values, onUpdate }) {
+  const [showNew, setShowNew] = useState(false);
+  const [newValue, setNewValue] = useState({
+    organ: '',
+    measurement_type: '',
+    species: 'dog',
+    size: 'medium',
+    min_value: '',
+    max_value: '',
+    unit: 'cm'
+  });
+
+  const createReferenceValue = async () => {
+    try {
+      await axios.post(`${API}/reference-values`, {
+        ...newValue,
+        min_value: parseFloat(newValue.min_value),
+        max_value: parseFloat(newValue.max_value)
+      });
+      toast.success('Valor de referência adicionado!');
+      setShowNew(false);
+      setNewValue({ organ: '', measurement_type: '', species: 'dog', size: 'medium', min_value: '', max_value: '', unit: 'cm' });
+      onUpdate();
+    } catch (error) {
+      toast.error('Erro ao adicionar valor de referência');
+    }
+  };
+
+  const deleteReferenceValue = async (id) => {
+    try {
+      await axios.delete(`${API}/reference-values/${id}`);
+      toast.success('Valor removido!');
+      onUpdate();
+    } catch (error) {
+      toast.error('Erro ao remover valor');
+    }
+  };
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex justify-between items-center">
+          <span>Valores de Referência</span>
+          <Button onClick={() => setShowNew(!showNew)} size="sm" data-testid="add-reference-button">
+            <Plus className="mr-2 h-4 w-4" />
+            Adicionar
+          </Button>
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        {showNew && (
+          <Card className="mb-4 p-4 bg-blue-50">
+            <div className="space-y-3">
+              <div className="grid grid-cols-2 gap-3">
+                <Select value={newValue.organ} onValueChange={(value) => setNewValue({ ...newValue, organ: value })}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Órgão" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {ORGANS.map(organ => (
+                      <SelectItem key={organ} value={organ}>{organ}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Input
+                  placeholder="Tipo de medida (ex: comprimento)"
+                  value={newValue.measurement_type}
+                  onChange={(e) => setNewValue({ ...newValue, measurement_type: e.target.value })}
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <Select value={newValue.species} onValueChange={(value) => setNewValue({ ...newValue, species: value })}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="dog">Cão</SelectItem>
+                    <SelectItem value="cat">Gato</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Select value={newValue.size} onValueChange={(value) => setNewValue({ ...newValue, size: value })}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="small">Pequeno</SelectItem>
+                    <SelectItem value="medium">Médio</SelectItem>
+                    <SelectItem value="large">Grande</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="grid grid-cols-3 gap-3">
+                <Input
+                  type="number"
+                  step="0.1"
+                  placeholder="Valor mínimo"
+                  value={newValue.min_value}
+                  onChange={(e) => setNewValue({ ...newValue, min_value: e.target.value })}
+                />
+                <Input
+                  type="number"
+                  step="0.1"
+                  placeholder="Valor máximo"
+                  value={newValue.max_value}
+                  onChange={(e) => setNewValue({ ...newValue, max_value: e.target.value })}
+                />
+                <Select value={newValue.unit} onValueChange={(value) => setNewValue({ ...newValue, unit: value })}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="cm">cm</SelectItem>
+                    <SelectItem value="mm">mm</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex gap-2">
+                <Button onClick={createReferenceValue} size="sm">Salvar</Button>
+                <Button onClick={() => setShowNew(false)} variant="outline" size="sm">Cancelar</Button>
+              </div>
+            </div>
+          </Card>
+        )}
+
+        <ScrollArea className="h-[500px]">
+          <div className="space-y-2">
+            {values.map(value => (
+              <div key={value.id} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                <div>
+                  <span className="font-medium">{value.organ}</span>
+                  <span className="text-sm text-gray-600 ml-2">
+                    {value.measurement_type} • {value.species === 'dog' ? 'Cão' : 'Gato'} • {value.size === 'small' ? 'Pequeno' : value.size === 'medium' ? 'Médio' : 'Grande'}
+                  </span>
+                  <div className="text-sm mt-1">
+                    <Badge variant="outline">{value.min_value} - {value.max_value} {value.unit}</Badge>
+                  </div>
+                </div>
+                <Button
+                  onClick={() => deleteReferenceValue(value.id)}
+                  variant="ghost"
+                  size="sm"
+                  data-testid={`delete-reference-${value.id}`}
+                >
+                  <Trash2 className="h-4 w-4 text-red-500" />
+                </Button>
+              </div>
+            ))}
+          </div>
+        </ScrollArea>
+      </CardContent>
+    </Card>
+  );
+}
 
 function App() {
   return (
     <div className="App">
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Home />}>
-            <Route index element={<Home />} />
-          </Route>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/exam/:examId" element={<ExamPage />} />
+          <Route path="/settings" element={<SettingsPage />} />
         </Routes>
       </BrowserRouter>
+      <Toaster position="top-right" />
     </div>
   );
 }
