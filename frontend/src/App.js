@@ -137,6 +137,7 @@ function HomePage() {
 function PatientCard({ patient, onUpdate }) {
   const [exams, setExams] = useState([]);
   const [showExams, setShowExams] = useState(false);
+  const [showEditDialog, setShowEditDialog] = useState(false);
   const navigate = useNavigate();
 
   const loadExams = async () => {
