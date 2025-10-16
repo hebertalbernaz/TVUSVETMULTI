@@ -1,0 +1,149 @@
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Plus, FileText, Edit } from 'lucide-react';
+import { toast } from 'sonner';
+import { db } from '@/services/database';
+import { PatientForm } from './PatientForm';
+
+export function PatientCard({ patient, onUpdate }) {
+  const [exams, setExams] = useState([]);
+  const [examsCount, setExamsCount] = useState(0);
+  const [showExams, setShowExams] = useState(false);
+  const [showEditDialog, setShowEditDialog] = useState(false);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    loadExamsCount();
+  }, [patient.id]);
+
+  const loadExamsCount = () => {
+    try {
+      const patientExams = db.getExams(patient.id);
+      setExamsCount(patientExams.length);
+      setExams(patientExams);
+    } catch (error) {
+      console.error('Erro ao carregar contagem de exames:', error);
+    }
+  };
+
+  const loadExams = () => {
+    try {
+      const patientExams = db.getExams(patient.id);
+      setExams(patientExams);
+      setExamsCount(patientExams.length);
+      setShowExams(true);
+    } catch (error) {
+      toast.error('Erro ao carregar exames');
+    }
+  };
+
+  const createNewExam = async () => {
+    try {
+      const newExam = await db.createExam({
+        patient_id: patient.id,
+        exam_weight: patient.weight
+      });
+      navigate(`/exam/${newExam.id}`);
+    } catch (error) {
+      toast.error('Erro ao criar exame');
+    }
+  };
+
+  return (
+    <Card className="hover:shadow-lg transition-shadow" data-testid={`patient-card-${patient.id}`}>
+      <CardHeader>
+        <CardTitle className="flex items-center justify-between">
+          <span>{patient.name}</span>
+          <div className="flex gap-2 items-center">
+            <Button
+              onClick={() => setShowEditDialog(true)}
+              variant="ghost"
+              size="sm"
+              data-testid={`edit-patient-${patient.id}`}
+            >
+              <Edit className="h-4 w-4" />
+            </Button>
+            <Badge variant={patient.species === 'dog' ? 'default' : 'secondary'}>
+              {patient.species === 'dog' ? 'Cão' : 'Gato'}
+            </Badge>
+          </div>
+        </CardTitle>
+        <CardDescription>
+          {patient.breed} • {patient.weight}kg • {patient.size === 'small' ? 'Pequeno' : patient.size === 'medium' ? 'Médio' : 'Grande'}
+          {patient.owner_name && ` • Tutor: ${patient.owner_name}`}
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div className="flex gap-2">
+          <Button
+            onClick={createNewExam}
+            className="flex-1"
+            data-testid={`new-exam-button-${patient.id}`}
+          >
+            <Plus className="mr-2 h-4 w-4" />
+            Novo Exame
+          </Button>
+          <Button
+            onClick={loadExams}
+            variant="outline"
+            className="flex-1"
+            data-testid={`view-exams-button-${patient.id}`}
+          >
+            <FileText className="mr-2 h-4 w-4" />
+            Exames ({examsCount})
+          </Button>
+        </div>
+
+        <Dialog open={showExams} onOpenChange={setShowExams}>
+          <DialogContent className="max-w-3xl">
+            <DialogHeader>
+              <DialogTitle>Exames de {patient.name}</DialogTitle>
+            </DialogHeader>
+            <ScrollArea className="max-h-[60vh]">
+              {exams.length === 0 ? (
+                <p className="text-gray-500 text-center py-8">Nenhum exame realizado</p>
+              ) : (
+                <div className="space-y-3">
+                  {exams.map(exam => (
+                    <Card key={exam.id} className="p-4 hover:bg-gray-50 cursor-pointer" onClick={() => navigate(`/exam/${exam.id}`)}>
+                      <div className="flex justify-between items-center">
+                        <div>
+                          <p className="font-medium">Exame de {new Date(exam.exam_date).toLocaleDateString('pt-BR')}</p>
+                          <p className="text-sm text-gray-500">
+                            {exam.organs_data?.length || 0} órgãos • {exam.images?.length || 0} imagens
+                          </p>
+                        </div>
+                        <Button variant="ghost" size="sm">
+                          <FileText className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </ScrollArea>
+          </DialogContent>
+        </Dialog>
+
+        <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Editar Paciente</DialogTitle>
+              <DialogDescription>Atualize os dados do paciente</DialogDescription>
+            </DialogHeader>
+            <PatientForm 
+              patient={patient}
+              onSuccess={() => { setShowEditDialog(false); onUpdate(); }} 
+              onCancel={() => setShowEditDialog(false)} 
+            />
+          </DialogContent>
+        </Dialog>
+      </CardContent>
+    </Card>
+  );
+}
