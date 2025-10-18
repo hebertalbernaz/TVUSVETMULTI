@@ -33,7 +33,10 @@ class DatabaseService {
         clinic_address: '',
         veterinarian_name: '',
         crmv: '',
-        letterhead_path: null
+        letterhead_path: null,
+        letterhead_filename: null,
+        letterhead_margins_mm: { top: 30, left: 15, right: 15, bottom: 20 },
+        saved_backup_passphrase: null
       }));
     }
     
