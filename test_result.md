@@ -101,3 +101,71 @@
 #====================================================================================================
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
+
+user_problem_statement: "Refatorar TVUSVET para 100% offline, sem backend/licença; manter todas as funcionalidades (pacientes, exames, imagens, templates, valores de referência, timbrado) e exportar DOCX; preparar testes automatizados e posteriormente executar testes mais profundos."
+
+backend: []
+
+frontend:
+  - task: "Migrar App para 100% offline: remover axios/API e usar db service"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Atualizado App.js para roteamento simples e inicialização do db offline"
+  - task: "Criar ExamPage offline com export DOCX e imagens"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/pages/ExamPage.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Novo ExamPage usa db service, upload base64, alerta de referência e export DOCX com 6 imagens por página e timbrado"
+  - task: "Settings: Letterhead com preview local base64"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/components/LetterheadSettings.js"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: true
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Aceita PNG/JPG/PDF/DOCX; preview para imagem, mensagem para PDF/DOCX"
+  - task: "HomePage + SettingsPage integradas ao db"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/pages/HomePage.js, /app/frontend/src/pages/SettingsPage.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Ambas usam db.get*/update* e incluem import/export backup"
+
+metadata:
+  created_by: "main_agent"
+  version: "1.0"
+  test_sequence: 1
+  run_ui: true
+
+test_plan:
+  current_focus:
+    - "Smoke test navegação: / -> novo paciente -> criar exame -> editar medidas -> upload imagens -> export DOCX"
+    - "Settings: editar dados da clínica; upload timbrado imagem; importar backup"
+  stuck_tasks: []
+  test_all: false
+  test_priority: "high_first"
+
+agent_communication:
+  - agent: "main"
+    message: "Pronto para smoke tests automatizados na UI. Foco em fluxo principal e export DOCX. Depois faremos testes mais profundos conforme solicitado pelo usuário."
