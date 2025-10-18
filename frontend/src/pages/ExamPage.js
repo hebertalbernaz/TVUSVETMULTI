@@ -539,12 +539,7 @@ function OrganEditor({ organ, templates, referenceValues, onChange }) {
                         <span className="font-semibold text-emerald-900">Medida {index + 1}: </span>
                         <span className="text-lg">{data.value} {data.unit}</span>
                       </div>
-                      {data.is_abnormal && (
-                        <Badge variant="destructive" className="flex items-center gap-1">
-                          <AlertCircle className="h-3 w-3" />
-                          Fora do padrão
-                        </Badge>
-                      )}
+                      {/* alerts disabled as per user request */}
                     </div>
                   ))}
                 </div>
