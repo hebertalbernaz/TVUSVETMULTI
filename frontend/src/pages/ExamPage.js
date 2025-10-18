@@ -495,7 +495,8 @@ function OrganEditor({ organ, templates, referenceValues, onChange }) {
       [type]: {
         value: parseFloat(value),
         unit,
-        is_abnormal: checkIfAbnormal(type, parseFloat(value), unit)
+        // alerts disabled per user request
+        is_abnormal: false
       }
     };
     setMeasurements(newMeasurements);
