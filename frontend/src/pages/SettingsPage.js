@@ -116,6 +116,11 @@ export default function SettingsPage() {
 
           <TabsContent value="clinic">
             <ClinicSettings settings={settings} onSave={saveSettings} />
+
+          <TabsContent value="backup">
+            <BackupSettings settings={settings} onSave={saveSettings} />
+          </TabsContent>
+
           </TabsContent>
 
           <TabsContent value="letterhead">
