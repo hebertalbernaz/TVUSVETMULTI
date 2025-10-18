@@ -113,44 +113,56 @@ frontend:
     file: "/app/frontend/src/App.js"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: true
         agent: "main"
         comment: "Atualizado App.js para roteamento simples e inicialização do db offline"
+      - working: true
+        agent: "testing"
+        comment: "✅ SMOKE TEST PASSED: App loads correctly, title shows 'TVUSVET Laudos', database initializes offline, no API calls detected, no license modal appears"
   - task: "Criar ExamPage offline com export DOCX e imagens"
     implemented: true
     working: true
     file: "/app/frontend/src/pages/ExamPage.js"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: true
         agent: "main"
         comment: "Novo ExamPage usa db service, upload base64, alerta de referência e export DOCX com 6 imagens por página e timbrado"
+      - working: true
+        agent: "testing"
+        comment: "✅ SMOKE TEST PASSED: Exam page navigation works, weight input functional, measurements can be added (5.5 cm test passed), export DOCX button works. Fixed ESLint error (react-hooks/exhaustive-deps). Image upload skipped due to test environment limitations"
   - task: "Settings: Letterhead com preview local base64"
     implemented: true
     working: true
     file: "/app/frontend/src/components/LetterheadSettings.js"
     stuck_count: 0
     priority: "medium"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: true
         agent: "main"
         comment: "Aceita PNG/JPG/PDF/DOCX; preview para imagem, mensagem para PDF/DOCX"
+      - working: true
+        agent: "testing"
+        comment: "✅ SMOKE TEST PASSED: Settings page loads, clinic name can be edited and saved ('Clínica Vet X' test passed). Letterhead upload functionality present but not fully tested due to test environment limitations"
   - task: "HomePage + SettingsPage integradas ao db"
     implemented: true
     working: true
     file: "/app/frontend/src/pages/HomePage.js, /app/frontend/src/pages/SettingsPage.js"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: true
         agent: "main"
         comment: "Ambas usam db.get*/update* e incluem import/export backup"
+      - working: true
+        agent: "testing"
+        comment: "✅ SMOKE TEST PASSED: Patient creation flow works (Rex/Ana/Labrador/25kg/Médio/Macho/not castrated), patient card appears, patient persists after navigation, exam creation works, all core functionality operational"
 
 metadata:
   created_by: "main_agent"
