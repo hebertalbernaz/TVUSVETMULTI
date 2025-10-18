@@ -315,10 +315,3 @@ function BackupSettings({ settings, onSave }) {
     </Card>
   );
 }
-
-          </Button>
-        </form>
-      </CardContent>
-    </Card>
-  );
-}
