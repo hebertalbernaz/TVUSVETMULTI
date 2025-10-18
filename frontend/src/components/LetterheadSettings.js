@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import { Upload, X, Eye } from 'lucide-react';
 import { toast } from 'sonner';
@@ -17,9 +16,9 @@ export function LetterheadSettings({ settings, onSave }) {
     if (!file) return;
 
     // Verificar tipo de arquivo
-    const validTypes = ['image/png', 'image/jpeg', 'image/jpg', 'application/pdf'];
+    const validTypes = ['image/png', 'image/jpeg', 'image/jpg', 'application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
     if (!validTypes.includes(file.type)) {
-      toast.error('Formato inválido! Use PNG, JPG ou PDF');
+      toast.error('Formato inválido! Use PNG, JPG, PDF ou DOCX');
       return;
     }
 
@@ -36,14 +35,11 @@ export function LetterheadSettings({ settings, onSave }) {
       reader.onload = async (e) => {
         const base64Data = e.target.result;
         setPreview(base64Data);
-        
-        // Salvar nas configurações
         await onSave({
           ...settings,
           letterhead_path: base64Data,
           letterhead_filename: file.name
         });
-        
         toast.success('Timbrado carregado com sucesso!');
         setUploading(false);
       };
@@ -83,7 +79,7 @@ export function LetterheadSettings({ settings, onSave }) {
       </CardHeader>
       <CardContent className="space-y-4">
         <div>
-          <Label htmlFor="letterhead-upload">Upload do Timbrado (PNG, JPG ou PDF)</Label>
+          <Label htmlFor="letterhead-upload">Upload do Timbrado (PNG, JPG, PDF ou DOCX)</Label>
           <p className="text-sm text-gray-500 mb-2">
             Faça upload de um arquivo com o cabeçalho da sua clínica (máximo 5MB)
           </p>
@@ -92,7 +88,7 @@ export function LetterheadSettings({ settings, onSave }) {
               <input
                 id="letterhead-upload"
                 type="file"
-                accept=".pdf,.png,.jpg,.jpeg"
+                accept=".pdf,.png,.jpg,.jpeg,.docx"
                 onChange={handleFileUpload}
                 disabled={uploading}
                 className="hidden"
@@ -154,12 +150,12 @@ export function LetterheadSettings({ settings, onSave }) {
               </Button>
               <div className="mt-8">
                 <h3 className="text-lg font-semibold mb-4">Pré-visualização do Timbrado</h3>
-                {settings.letterhead_filename?.endsWith('.pdf') ? (
+                {settings.letterhead_filename?.endsWith('.pdf') || settings.letterhead_filename?.endsWith('.docx') ? (
                   <div className="text-center py-8">
                     <p className="text-gray-600">
-                      Pré-visualização de PDF não disponível.
+                      Pré-visualização não disponível.
                       <br />
-                      O arquivo será incluído nos laudos exportados.
+                      O arquivo será incluído nos laudos exportados como cabeçalho quando possível.
                     </p>
                   </div>
                 ) : (
