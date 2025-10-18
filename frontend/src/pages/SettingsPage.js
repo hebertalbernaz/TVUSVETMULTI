@@ -194,6 +194,123 @@ function ClinicSettings({ settings, onSave }) {
           </div>
           <Button type="submit" data-testid="save-clinic-settings-button">
             Salvar Configurações
+
+function BackupSettings({ settings, onSave }) {
+  const [useSavedPassphrase, setUseSavedPassphrase] = useState(!!settings.saved_backup_passphrase);
+  const [passphrase, setPassphrase] = useState('');
+
+  const handleExport = async () => {
+    try {
+      const { encryptBackup } = await import('@/services/cryptoBackup');
+      const json = db.exportBackup();
+      const finalPass = useSavedPassphrase && settings.saved_backup_passphrase ? settings.saved_backup_passphrase : passphrase;
+      if (!finalPass) {
+        alert('Defina uma senha para criptografar o backup ou salve uma senha nas configurações.');
+        return;
+      }
+      const enc = await encryptBackup(json, finalPass);
+      const blob = new Blob([enc], { type: 'application/octet-stream' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `tvusvet_backup_${new Date().toISOString().split('T')[0]}.tvusvet.enc`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      toast.success('Backup criptografado exportado!');
+    } catch (error) {
+      toast.error('Erro ao exportar backup');
+    }
+  };
+
+  const handleImport = async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      try {
+        const { decryptBackup } = await import('@/services/cryptoBackup');
+        const enc = e.target.result;
+        const finalPass = useSavedPassphrase && settings.saved_backup_passphrase ? settings.saved_backup_passphrase : passphrase;
+        if (!finalPass) {
+          alert('Informe a senha para importar o backup.');
+          return;
+        }
+        const json = await decryptBackup(enc, finalPass);
+        const ok = db.importBackup(json);
+        if (ok) {
+          toast.success('Backup importado com sucesso!');
+        } else {
+          toast.error('Falha ao importar backup');
+        }
+      } catch (err) {
+        toast.error('Senha incorreta ou arquivo inválido');
+      }
+    };
+    reader.readAsText(file);
+  };
+
+  const savePassphrase = async () => {
+    try {
+      await onSave({ ...settings, saved_backup_passphrase: passphrase || settings.saved_backup_passphrase });
+      setUseSavedPassphrase(true);
+      setPassphrase('');
+      toast.success('Senha salva para backups');
+    } catch (e) {
+      toast.error('Erro ao salvar senha');
+    }
+  };
+
+  const clearPassphrase = async () => {
+    try {
+      await onSave({ ...settings, saved_backup_passphrase: null });
+      setUseSavedPassphrase(false);
+      toast.success('Senha removida');
+    } catch (e) {
+      toast.error('Erro ao remover senha');
+    }
+  };
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Backup</CardTitle>
+        <CardDescription>Exporte e importe backups criptografados</CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="space-y-2">
+          <Label>Senha de Backup</Label>
+          <div className="flex gap-2">
+            <input
+              type="password"
+              value={passphrase}
+              onChange={(e) => setPassphrase(e.target.value)}
+              placeholder={useSavedPassphrase ? 'Usando senha salva' : 'Digite uma senha segura'}
+              className="border rounded px-3 py-2 flex-1"
+            />
+            <Button onClick={savePassphrase} variant="outline">Salvar Senha</Button>
+            {useSavedPassphrase && (
+              <Button onClick={clearPassphrase} variant="outline" className="text-red-600">Remover</Button>
+            )}
+          </div>
+          <div className="flex items-center gap-2">
+            <input type="checkbox" id="use-saved" checked={useSavedPassphrase} onChange={(e) => setUseSavedPassphrase(e.target.checked)} />
+            <Label htmlFor="use-saved">Usar senha salva</Label>
+          </div>
+        </div>
+        <div className="flex gap-2">
+          <Button onClick={handleExport}>Exportar Backup Criptografado</Button>
+          <label>
+            <input type="file" accept=".enc,.tvusvet.enc" onChange={handleImport} className="hidden" />
+            <Button as="span" variant="outline">Importar Backup Criptografado</Button>
+          </label>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
           </Button>
         </form>
       </CardContent>
