@@ -167,13 +167,11 @@ frontend:
 metadata:
   created_by: "main_agent"
   version: "1.0"
-  test_sequence: 1
+  test_sequence: 2
   run_ui: true
 
 test_plan:
-  current_focus:
-    - "Smoke test navegação: / -> novo paciente -> criar exame -> editar medidas -> upload imagens -> export DOCX"
-    - "Settings: editar dados da clínica; upload timbrado imagem; importar backup"
+  current_focus: []
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
@@ -181,3 +179,5 @@ test_plan:
 agent_communication:
   - agent: "main"
     message: "Pronto para smoke tests automatizados na UI. Foco em fluxo principal e export DOCX. Depois faremos testes mais profundos conforme solicitado pelo usuário."
+  - agent: "testing"
+    message: "✅ SMOKE TEST COMPLETED SUCCESSFULLY: All 8 test steps passed. Fixed minor ESLint error in ExamPage.js. Core functionality working: patient creation, exam navigation, measurements, DOCX export, settings management, data persistence. App is 100% offline as requested - no API calls detected, no license modal. Ready for deeper testing if needed."
