@@ -194,6 +194,12 @@ function ClinicSettings({ settings, onSave }) {
           </div>
           <Button type="submit" data-testid="save-clinic-settings-button">
             Salvar Configurações
+          </Button>
+        </form>
+      </CardContent>
+    </Card>
+  );
+}
 
 function BackupSettings({ settings, onSave }) {
   const [useSavedPassphrase, setUseSavedPassphrase] = useState(!!settings.saved_backup_passphrase);
