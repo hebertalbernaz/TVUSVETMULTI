@@ -38,7 +38,6 @@ export default function ExamPage() {
 
   useEffect(() => {
     loadExamData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [examId]);
 
   const loadExamData = async () => {
