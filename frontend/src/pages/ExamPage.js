@@ -52,22 +52,12 @@ export default function ExamPage() {
       const refValuesRes = db.getReferenceValues();
       setReferenceValues(refValuesRes);
 
-      // Initialize organs data
-      const allOrgans = [...ORGANS];
-      if (patientRes.sex === 'male') {
-        if (patientRes.is_neutered) {
-          allOrgans.push(...REPRODUCTIVE_ORGANS_MALE_NEUTERED);
-        } else {
-          allOrgans.push(...REPRODUCTIVE_ORGANS_MALE);
-        }
-      } else {
-        if (!patientRes.is_neutered) {
-          allOrgans.push(...REPRODUCTIVE_ORGANS_FEMALE);
-        }
-      }
+      // Initialize structures data dynamically based on exam type
+      const examType = examRes.exam_type || 'ultrasound_abd';
+      const allStructures = getStructuresForExam(examType, patientRes);
 
-      const initialOrgansData = allOrgans.map(organ => ({
-        organ_name: organ,
+      const initialOrgansData = allStructures.map(structure => ({
+        organ_name: structure,
         measurements: {},
         selected_findings: [],
         custom_notes: '',
