@@ -8,11 +8,32 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Plus, Trash2, Edit, Save, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { db } from '@/services/database';
+import { 
+  ECHOCARDIOGRAM_STRUCTURES, 
+  ECG_STRUCTURES, 
+  RADIOGRAPHY_STRUCTURES, 
+  TOMOGRAPHY_STRUCTURES,
+  ABDOMINAL_ORGANS,
+  REPRODUCTIVE_ORGANS_MALE,
+  REPRODUCTIVE_ORGANS_FEMALE
+} from '@/lib/exam_types';
 
-const ORGANS = [
-  'Estômago', 'Fígado', 'Baço', 'Rim Esquerdo', 'Rim Direito',
-  'Vesícula Urinária', 'Adrenal Esquerda', 'Adrenal Direita',
-  'Duodeno', 'Jejuno', 'Cólon', 'Ceco', 'Íleo', 'Linfonodos'
+// Comprehensive list of ALL structures from ALL exam types
+const ALL_STRUCTURES = [
+  // Abdominal Ultrasound
+  { category: 'Ultrassom Abdominal', structures: [
+    ...ABDOMINAL_ORGANS,
+    ...REPRODUCTIVE_ORGANS_MALE,
+    ...REPRODUCTIVE_ORGANS_FEMALE
+  ]},
+  // Echocardiogram
+  { category: 'Ecocardiograma', structures: ECHOCARDIOGRAM_STRUCTURES.map(s => s.label) },
+  // ECG
+  { category: 'Eletrocardiograma', structures: ECG_STRUCTURES.map(s => s.label) },
+  // Radiography
+  { category: 'Radiografia', structures: RADIOGRAPHY_STRUCTURES.map(s => s.label) },
+  // Tomography
+  { category: 'Tomografia', structures: TOMOGRAPHY_STRUCTURES.map(s => s.label) }
 ];
 
 export function ReferenceValuesManager({ values, onUpdate }) {
