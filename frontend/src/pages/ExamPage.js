@@ -586,28 +586,92 @@ function OrganEditor({ organ, templates, referenceValues, onChange, structureDef
           </TabsList>
 
           <TabsContent value="measurements" className="space-y-4">
-            <div className="space-y-4">
-              <h3 className="font-medium text-lg">Adicionar Medida</h3>
-              <MeasurementInput 
-                onAdd={addMeasurement} 
-                existingMeasurementsCount={Object.keys(measurements).length}
-              />
-
-              {Object.keys(measurements).length > 0 && (
-                <div className="space-y-3 mt-6">
-                  <h4 className="font-medium text-lg">Medidas Registradas</h4>
-                  {Object.entries(measurements).map(([type, data], index) => (
-                    <div key={type} className="flex items-center justify-between p-4 bg-emerald-50 rounded-lg border border-emerald-200">
-                      <div>
-                        <span className="font-semibold text-emerald-900">Medida {index + 1}: </span>
-                        <span className="text-lg">{data.value} {data.unit}</span>
+            {hasClinicalMeasurements ? (
+              // Clinical measurements system (Echo, ECG, some Radiography)
+              <div className="space-y-4">
+                <h3 className="font-medium text-lg">Medidas Clínicas</h3>
+                <div className="grid gap-4">
+                  {structureDefinition.measurements.map((measurementDef) => (
+                    <div key={measurementDef.id} className="grid gap-2">
+                      <Label 
+                        htmlFor={`measure-${measurementDef.id}`}
+                        className="text-sm font-medium"
+                        title={measurementDef.description}
+                      >
+                        {measurementDef.label} {measurementDef.unit && `(${measurementDef.unit})`}
+                      </Label>
+                      <div className="flex gap-2">
+                        <Input
+                          id={`measure-${measurementDef.id}`}
+                          type="number"
+                          step="0.01"
+                          placeholder={`Ex: ${measurementDef.unit === 'cm' ? '1.2' : measurementDef.unit === '%' ? '60' : '100'}`}
+                          value={measurements[measurementDef.id]?.value || ''}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            if (value) {
+                              addMeasurement(measurementDef.id, value, measurementDef.unit);
+                            } else {
+                              // Remove measurement if empty
+                              const newMeasurements = { ...measurements };
+                              delete newMeasurements[measurementDef.id];
+                              setMeasurements(newMeasurements);
+                              onChange('measurements', newMeasurements);
+                            }
+                          }}
+                          className="flex-1"
+                        />
+                        {measurementDef.unit && (
+                          <span className="flex items-center px-3 bg-muted rounded-md text-sm text-muted-foreground">
+                            {measurementDef.unit}
+                          </span>
+                        )}
                       </div>
-                      {/* alerts disabled as per user request */}
                     </div>
                   ))}
                 </div>
-              )}
-            </div>
+                
+                {Object.keys(measurements).length > 0 && (
+                  <div className="mt-6 p-4 bg-accent/20 rounded-lg">
+                    <h4 className="font-medium text-sm mb-2">Resumo das Medidas</h4>
+                    <div className="grid grid-cols-2 gap-2 text-sm">
+                      {Object.entries(measurements).map(([id, data]) => {
+                        const def = structureDefinition.measurements.find(m => m.id === id);
+                        return def ? (
+                          <div key={id}>
+                            <span className="text-muted-foreground">{def.label}:</span>{' '}
+                            <span className="font-semibold">{data.value} {data.unit}</span>
+                          </div>
+                        ) : null;
+                      })}
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : (
+              // Generic measurement system (Ultrasound, Tomography, some Radiography)
+              <div className="space-y-4">
+                <h3 className="font-medium text-lg">Adicionar Medida</h3>
+                <MeasurementInput 
+                  onAdd={addMeasurement} 
+                  existingMeasurementsCount={Object.keys(measurements).length}
+                />
+
+                {Object.keys(measurements).length > 0 && (
+                  <div className="space-y-3 mt-6">
+                    <h4 className="font-medium text-lg">Medidas Registradas</h4>
+                    {Object.entries(measurements).map(([type, data], index) => (
+                      <div key={type} className="flex items-center justify-between p-4 bg-accent/20 rounded-lg border border-border">
+                        <div>
+                          <span className="font-semibold">Medida {index + 1}: </span>
+                          <span className="text-lg">{data.value} {data.unit}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
           </TabsContent>
 
           <TabsContent value="findings" className="space-y-4">
