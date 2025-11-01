@@ -199,17 +199,20 @@ export default function ExamPage() {
 
       const header = new Header({ children: headerChildren });
 
-      // Patient + exam info
+      // Patient + exam info (with translation)
       const examType = exam?.exam_type || 'ultrasound_abd';
       const examTypeName = getExamTypeName(examType);
       
+      // Translate labels based on selected language
+      const t = (text) => translate(text, reportLanguage);
+      
       const docChildren = [
-        new Paragraph({ text: `Paciente: ${patient?.name || ''} (${patient?.species === 'dog' ? 'Cão' : 'Gato'})`, heading: HeadingLevel.HEADING_2 }),
-        new Paragraph({ text: `Raça: ${patient?.breed || ''} • Peso cadastrado: ${patient?.weight || ''} kg • Peso no exame: ${examWeight || ''} kg` }),
-        new Paragraph({ text: `Tipo de Exame: ${examTypeName}` }),
-        new Paragraph({ text: `Data do exame: ${exam ? new Date(exam.exam_date).toLocaleDateString('pt-BR') : ''}` }),
+        new Paragraph({ text: `${t('Paciente')}: ${patient?.name || ''} (${t(patient?.species === 'dog' ? 'Cão' : 'Gato')})`, heading: HeadingLevel.HEADING_2 }),
+        new Paragraph({ text: `${t('Raça')}: ${patient?.breed || ''} • ${t('Peso cadastrado')}: ${patient?.weight || ''} kg • ${t('Peso no exame')}: ${examWeight || ''} kg` }),
+        new Paragraph({ text: `${t('Tipo de Exame')}: ${t(examTypeName)}` }),
+        new Paragraph({ text: `${t('Data do exame')}: ${exam ? new Date(exam.exam_date).toLocaleDateString(reportLanguage === 'pt' ? 'pt-BR' : 'en-US') : ''}` }),
         new Paragraph({ text: ' ' }),
-        new Paragraph({ text: 'Laudo', heading: HeadingLevel.HEADING_2 }),
+        new Paragraph({ text: t('Laudo'), heading: HeadingLevel.HEADING_2 }),
       ];
 
       // Structure order - use dynamic structures based on exam type
