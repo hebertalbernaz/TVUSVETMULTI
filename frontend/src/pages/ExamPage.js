@@ -60,7 +60,8 @@ export default function ExamPage() {
       const allStructures = getStructuresForExam(examType, patientRes);
 
       const initialOrgansData = allStructures.map(structure => ({
-        organ_name: structure,
+        organ_name: structure.label || structure,  // Support both new object format and old string format
+        structure_id: structure.id || null,  // Store structure ID for clinical measurements
         measurements: {},
         selected_findings: [],
         custom_notes: '',
