@@ -534,9 +534,12 @@ export default function ExamPage() {
   );
 }
 
-function OrganEditor({ organ, templates, referenceValues, onChange }) {
+function OrganEditor({ organ, templates, referenceValues, onChange, structureDefinition }) {
   const [measurements, setMeasurements] = useState(organ.measurements || {});
   const [reportText, setReportText] = useState(organ.report_text || '');
+
+  // Check if this structure has defined clinical measurements
+  const hasClinicalMeasurements = structureDefinition?.measurements && structureDefinition.measurements.length > 0;
 
   useEffect(() => {
     setReportText(organ.report_text || '');
