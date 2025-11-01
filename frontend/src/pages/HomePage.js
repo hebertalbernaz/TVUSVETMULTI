@@ -59,14 +59,13 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-background" data-testid="home-page">
       <div className="container mx-auto p-6">
+        <img 
+          src="/logo-tvusvet.png" 
+          alt="TVUSVET MULTI-LAUDOS" 
+          className="max-w-xs mx-auto mb-8"
+        />
         <div className="flex justify-between items-center mb-8">
-          <div className="flex items-center">
-            <img 
-              src="/logo-tvusvet.png" 
-              alt="TVUSVET Multi-Laudos" 
-              className="max-w-xs h-auto"
-            />
-          </div>
+          <div></div>
           <div className="flex gap-3 items-center">
             <ThemeToggle />
             <Button
