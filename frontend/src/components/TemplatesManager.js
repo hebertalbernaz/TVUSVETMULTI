@@ -174,7 +174,7 @@ export function TemplatesManager({ templates, onUpdate }) {
     <Card>
       <CardHeader>
         <CardTitle className="flex justify-between items-center">
-          <span>Textos Padrão por Órgão</span>
+          <span>Textos Padrão por Estrutura</span>
           <Button onClick={() => setShowNew(!showNew)} size="sm" data-testid="add-template-button">
             <Plus className="mr-2 h-4 w-4" />
             Adicionar
