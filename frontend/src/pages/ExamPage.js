@@ -13,6 +13,8 @@ import { toast } from 'sonner';
 import { db } from '@/services/database';
 import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType, ImageRun, Header, SectionType, PageBreak, Table, TableRow, TableCell, WidthType } from 'docx';
 import { getStructuresForExam, getExamTypeName } from '@/lib/exam_types';
+import { translate, getAvailableLanguages } from '@/services/translation';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 export default function ExamPage() {
   const { examId } = useParams();
