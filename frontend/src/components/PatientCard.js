@@ -113,14 +113,32 @@ export function PatientCard({ patient, onUpdate }) {
       </CardHeader>
       <CardContent>
         <div className="flex gap-2">
-          <Button
-            onClick={createNewExam}
-            className="flex-1"
-            data-testid={`new-exam-button-${patient.id}`}
-          >
-            <Plus className="mr-2 h-4 w-4" />
-            Novo Exame
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                className="flex-1"
+                data-testid={`new-exam-button-${patient.id}`}
+              >
+                <Plus className="mr-2 h-4 w-4" />
+                Novo Exame
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="w-64">
+              {getAllExamTypes().map((examType) => (
+                <DropdownMenuItem
+                  key={examType.id}
+                  onClick={() => createNewExam(examType.id)}
+                  className="cursor-pointer"
+                >
+                  <span className="mr-2 text-lg">{examType.icon}</span>
+                  <div>
+                    <div className="font-medium">{examType.name}</div>
+                    <div className="text-xs text-gray-500">{examType.description}</div>
+                  </div>
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
           <Button
             onClick={loadExams}
             variant="outline"
