@@ -161,17 +161,44 @@ export function PatientCard({ patient, onUpdate }) {
               ) : (
                 <div className="space-y-3">
                   {exams.map(exam => (
-                    <Card key={exam.id} className="p-4 hover:bg-gray-50 cursor-pointer" onClick={() => navigate(`/exam/${exam.id}`)}>
+                    <Card key={exam.id} className="p-4 hover:bg-gray-50">
                       <div className="flex justify-between items-center">
-                        <div>
-                          <p className="font-medium">Exame de {new Date(exam.exam_date).toLocaleDateString('pt-BR')}</p>
-                          <p className="text-sm text-gray-500">
-                            {exam.organs_data?.length || 0} órgãos • {exam.images?.length || 0} imagens
+                        <div 
+                          className="flex-1 cursor-pointer" 
+                          onClick={() => navigate(`/exam/${exam.id}`)}
+                        >
+                          <div className="flex items-center gap-2">
+                            <p className="font-medium">
+                              {getExamTypeName(exam.exam_type || 'ultrasound_abd')}
+                            </p>
+                            <Badge variant="outline" className="text-xs">
+                              {new Date(exam.exam_date).toLocaleDateString('pt-BR')}
+                            </Badge>
+                          </div>
+                          <p className="text-sm text-gray-500 mt-1">
+                            {exam.organs_data?.length || 0} estruturas • {exam.images?.length || 0} imagens
                           </p>
                         </div>
-                        <Button variant="ghost" size="sm">
-                          <FileText className="h-4 w-4" />
-                        </Button>
+                        <div className="flex gap-2">
+                          <Button 
+                            variant="ghost" 
+                            size="sm"
+                            onClick={() => navigate(`/exam/${exam.id}`)}
+                          >
+                            <FileText className="h-4 w-4" />
+                          </Button>
+                          <Button 
+                            variant="ghost" 
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setExamToDelete(exam.id);
+                            }}
+                            className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </div>
                     </Card>
                   ))}
