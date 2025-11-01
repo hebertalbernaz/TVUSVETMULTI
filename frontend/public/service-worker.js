@@ -1,5 +1,5 @@
 // TVUSVET Multi Laudos Service Worker
-const CACHE_NAME = 'tvusvet-multi-v2';
+const CACHE_NAME = 'tvusvet-multi-v3';
 const urlsToCache = [
   '/',
   '/static/css/main.css',
