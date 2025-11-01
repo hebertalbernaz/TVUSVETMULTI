@@ -9,6 +9,7 @@ import { toast } from 'sonner';
 import { db } from '@/services/database';
 import { PatientCard } from '@/components/PatientCard';
 import { PatientForm } from '@/components/PatientForm';
+import { ThemeToggle } from '@/components/ThemeToggle';
 
 export default function HomePage() {
   const [patients, setPatients] = useState([]);
