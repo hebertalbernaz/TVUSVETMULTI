@@ -656,21 +656,87 @@ class DatabaseService {
   
   initializeDefaultReferenceValues() {
     const refValues = [
-      // Rins
+      // ========== ULTRASOUND - RINS ==========
       { organ: 'Rim Esquerdo', measurement_type: 'comprimento', species: 'dog', size: 'small', min_value: 3.5, max_value: 5.5, unit: 'cm' },
       { organ: 'Rim Esquerdo', measurement_type: 'comprimento', species: 'dog', size: 'medium', min_value: 5.0, max_value: 7.0, unit: 'cm' },
       { organ: 'Rim Esquerdo', measurement_type: 'comprimento', species: 'dog', size: 'large', min_value: 6.5, max_value: 9.0, unit: 'cm' },
+      { organ: 'Rim Esquerdo', measurement_type: 'comprimento', species: 'cat', size: 'medium', min_value: 3.0, max_value: 4.3, unit: 'cm' },
       { organ: 'Rim Direito', measurement_type: 'comprimento', species: 'dog', size: 'small', min_value: 3.5, max_value: 5.5, unit: 'cm' },
       { organ: 'Rim Direito', measurement_type: 'comprimento', species: 'dog', size: 'medium', min_value: 5.0, max_value: 7.0, unit: 'cm' },
       { organ: 'Rim Direito', measurement_type: 'comprimento', species: 'dog', size: 'large', min_value: 6.5, max_value: 9.0, unit: 'cm' },
+      { organ: 'Rim Direito', measurement_type: 'comprimento', species: 'cat', size: 'medium', min_value: 3.0, max_value: 4.3, unit: 'cm' },
+      
       // Fígado
       { organ: 'Fígado', measurement_type: 'espessura', species: 'dog', size: 'small', min_value: 2.0, max_value: 4.0, unit: 'cm' },
       { organ: 'Fígado', measurement_type: 'espessura', species: 'dog', size: 'medium', min_value: 3.0, max_value: 5.5, unit: 'cm' },
       { organ: 'Fígado', measurement_type: 'espessura', species: 'dog', size: 'large', min_value: 4.0, max_value: 7.0, unit: 'cm' },
+      { organ: 'Fígado', measurement_type: 'espessura', species: 'cat', size: 'medium', min_value: 2.0, max_value: 4.0, unit: 'cm' },
+      
       // Baço
       { organ: 'Baço', measurement_type: 'espessura', species: 'dog', size: 'small', min_value: 0.5, max_value: 1.5, unit: 'cm' },
       { organ: 'Baço', measurement_type: 'espessura', species: 'dog', size: 'medium', min_value: 1.0, max_value: 2.0, unit: 'cm' },
-      { organ: 'Baço', measurement_type: 'espessura', species: 'dog', size: 'large', min_value: 1.5, max_value: 2.5, unit: 'cm' }
+      { organ: 'Baço', measurement_type: 'espessura', species: 'dog', size: 'large', min_value: 1.5, max_value: 2.5, unit: 'cm' },
+      { organ: 'Baço', measurement_type: 'espessura', species: 'cat', size: 'medium', min_value: 0.5, max_value: 1.0, unit: 'cm' },
+      
+      // ========== ECHOCARDIOGRAM ==========
+      
+      // Relação AE/Ao (Átrio Esquerdo / Aorta)
+      { organ: 'Relação Aorta/Átrio Esquerdo (Modo-M)', measurement_type: 'la_ao_ratio', species: 'dog', size: 'small', min_value: 0.8, max_value: 1.3, unit: '' },
+      { organ: 'Relação Aorta/Átrio Esquerdo (Modo-M)', measurement_type: 'la_ao_ratio', species: 'dog', size: 'medium', min_value: 0.8, max_value: 1.3, unit: '' },
+      { organ: 'Relação Aorta/Átrio Esquerdo (Modo-M)', measurement_type: 'la_ao_ratio', species: 'dog', size: 'large', min_value: 0.8, max_value: 1.3, unit: '' },
+      { organ: 'Relação Aorta/Átrio Esquerdo (Modo-M)', measurement_type: 'la_ao_ratio', species: 'cat', size: 'medium', min_value: 0.9, max_value: 1.4, unit: '' },
+      
+      // Fração de Encurtamento (FS%)
+      { organ: 'Ventrículo Esquerdo (Modo-M)', measurement_type: 'fs', species: 'dog', size: 'small', min_value: 25, max_value: 45, unit: '%' },
+      { organ: 'Ventrículo Esquerdo (Modo-M)', measurement_type: 'fs', species: 'dog', size: 'medium', min_value: 25, max_value: 45, unit: '%' },
+      { organ: 'Ventrículo Esquerdo (Modo-M)', measurement_type: 'fs', species: 'dog', size: 'large', min_value: 20, max_value: 40, unit: '%' },
+      { organ: 'Ventrículo Esquerdo (Modo-M)', measurement_type: 'fs', species: 'cat', size: 'medium', min_value: 30, max_value: 55, unit: '%' },
+      
+      // Fração de Ejeção (FE%)
+      { organ: 'Ventrículo Esquerdo (Modo-M)', measurement_type: 'fe', species: 'dog', size: 'small', min_value: 50, max_value: 75, unit: '%' },
+      { organ: 'Ventrículo Esquerdo (Modo-M)', measurement_type: 'fe', species: 'dog', size: 'medium', min_value: 50, max_value: 75, unit: '%' },
+      { organ: 'Ventrículo Esquerdo (Modo-M)', measurement_type: 'fe', species: 'dog', size: 'large', min_value: 45, max_value: 70, unit: '%' },
+      { organ: 'Ventrículo Esquerdo (Modo-M)', measurement_type: 'fe', species: 'cat', size: 'medium', min_value: 55, max_value: 80, unit: '%' },
+      
+      // DIVEd (Diâmetro Interno VE em diástole) - normalized
+      { organ: 'Ventrículo Esquerdo (Modo-M)', measurement_type: 'lvidd', species: 'dog', size: 'small', min_value: 2.5, max_value: 4.0, unit: 'cm' },
+      { organ: 'Ventrículo Esquerdo (Modo-M)', measurement_type: 'lvidd', species: 'dog', size: 'medium', min_value: 3.0, max_value: 4.7, unit: 'cm' },
+      { organ: 'Ventrículo Esquerdo (Modo-M)', measurement_type: 'lvidd', species: 'dog', size: 'large', min_value: 3.5, max_value: 5.5, unit: 'cm' },
+      { organ: 'Ventrículo Esquerdo (Modo-M)', measurement_type: 'lvidd', species: 'cat', size: 'medium', min_value: 1.2, max_value: 1.8, unit: 'cm' },
+      
+      // ========== ELECTROCARDIOGRAM (ECG) ==========
+      
+      // Frequência Cardíaca
+      { organ: 'Ritmo e Frequência', measurement_type: 'heart_rate', species: 'dog', size: 'small', min_value: 70, max_value: 160, unit: 'bpm' },
+      { organ: 'Ritmo e Frequência', measurement_type: 'heart_rate', species: 'dog', size: 'medium', min_value: 60, max_value: 140, unit: 'bpm' },
+      { organ: 'Ritmo e Frequência', measurement_type: 'heart_rate', species: 'dog', size: 'large', min_value: 50, max_value: 120, unit: 'bpm' },
+      { organ: 'Ritmo e Frequência', measurement_type: 'heart_rate', species: 'cat', size: 'medium', min_value: 120, max_value: 220, unit: 'bpm' },
+      
+      // Onda P (duração)
+      { organ: 'Medições (Ondas e Intervalos)', measurement_type: 'p_duration', species: 'dog', size: 'small', min_value: 20, max_value: 40, unit: 'ms' },
+      { organ: 'Medições (Ondas e Intervalos)', measurement_type: 'p_duration', species: 'dog', size: 'medium', min_value: 20, max_value: 40, unit: 'ms' },
+      { organ: 'Medições (Ondas e Intervalos)', measurement_type: 'p_duration', species: 'dog', size: 'large', min_value: 20, max_value: 50, unit: 'ms' },
+      { organ: 'Medições (Ondas e Intervalos)', measurement_type: 'p_duration', species: 'cat', size: 'medium', min_value: 20, max_value: 40, unit: 'ms' },
+      
+      // Complexo QRS (duração)
+      { organ: 'Medições (Ondas e Intervalos)', measurement_type: 'qrs_duration', species: 'dog', size: 'small', min_value: 30, max_value: 50, unit: 'ms' },
+      { organ: 'Medições (Ondas e Intervalos)', measurement_type: 'qrs_duration', species: 'dog', size: 'medium', min_value: 35, max_value: 60, unit: 'ms' },
+      { organ: 'Medições (Ondas e Intervalos)', measurement_type: 'qrs_duration', species: 'dog', size: 'large', min_value: 40, max_value: 70, unit: 'ms' },
+      { organ: 'Medições (Ondas e Intervalos)', measurement_type: 'qrs_duration', species: 'cat', size: 'medium', min_value: 20, max_value: 40, unit: 'ms' },
+      
+      // Intervalo PR
+      { organ: 'Medições (Ondas e Intervalos)', measurement_type: 'pr_interval', species: 'dog', size: 'small', min_value: 60, max_value: 130, unit: 'ms' },
+      { organ: 'Medições (Ondas e Intervalos)', measurement_type: 'pr_interval', species: 'dog', size: 'medium', min_value: 60, max_value: 130, unit: 'ms' },
+      { organ: 'Medições (Ondas e Intervalos)', measurement_type: 'pr_interval', species: 'dog', size: 'large', min_value: 60, max_value: 140, unit: 'ms' },
+      { organ: 'Medições (Ondas e Intervalos)', measurement_type: 'pr_interval', species: 'cat', size: 'medium', min_value: 50, max_value: 90, unit: 'ms' },
+      
+      // ========== RADIOGRAPHY ==========
+      
+      // VHS (Vertebral Heart Score)
+      { organ: 'Tórax - Silhueta Cardíaca', measurement_type: 'vhs', species: 'dog', size: 'small', min_value: 8.5, max_value: 10.5, unit: 'v' },
+      { organ: 'Tórax - Silhueta Cardíaca', measurement_type: 'vhs', species: 'dog', size: 'medium', min_value: 8.5, max_value: 10.5, unit: 'v' },
+      { organ: 'Tórax - Silhueta Cardíaca', measurement_type: 'vhs', species: 'dog', size: 'large', min_value: 8.5, max_value: 10.5, unit: 'v' },
+      { organ: 'Tórax - Silhueta Cardíaca', measurement_type: 'vhs', species: 'cat', size: 'medium', min_value: 7.0, max_value: 8.0, unit: 'v' }
     ];
     
     const withIds = refValues.map(rv => ({ ...rv, id: this.generateId() }));
