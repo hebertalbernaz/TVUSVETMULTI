@@ -20,8 +20,11 @@ const ORGANS = [
 export function TemplatesManager({ templates, onUpdate }) {
   const [showNew, setShowNew] = useState(false);
   const [editingId, setEditingId] = useState(null);
+  const [editTitle, setEditTitle] = useState('');
   const [editText, setEditText] = useState('');
-  const [newTemplate, setNewTemplate] = useState({ organ: '', category: 'normal', text: '' });
+  const [newTemplate, setNewTemplate] = useState({ organ: '', category: 'normal', title: '', text: '' });
+  const textareaRef = useRef(null);
+  const editTextareaRef = useRef(null);
 
   const createTemplate = async () => {
     try {
