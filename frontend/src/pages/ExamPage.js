@@ -334,7 +334,22 @@ export default function ExamPage() {
               />
             </div>
           </div>
-          <div className="flex gap-3">
+          <div className="flex gap-3 items-center">
+            <div className="flex items-center gap-2">
+              <Label className="text-sm whitespace-nowrap">Idioma:</Label>
+              <Select value={reportLanguage} onValueChange={setReportLanguage}>
+                <SelectTrigger className="w-32 h-10">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {getAvailableLanguages().map((lang) => (
+                    <SelectItem key={lang.code} value={lang.code}>
+                      {lang.flag} {lang.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
             <Button onClick={saveExam} variant="outline" className="h-12 text-base px-6" data-testid="save-exam-button">
               <Save className="mr-2 h-5 w-5" />
               Salvar
