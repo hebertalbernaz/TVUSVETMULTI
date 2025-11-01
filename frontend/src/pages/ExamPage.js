@@ -147,6 +147,13 @@ export default function ExamPage() {
     setOrgansData(newOrgansData);
   };
 
+  // Check if a structure is completed
+  const isStructureCompleted = (organ) => {
+    const hasReport = organ.report_text && organ.report_text.trim().length > 0;
+    const hasMeasurements = organ.measurements && Object.keys(organ.measurements).length > 0;
+    return hasReport || hasMeasurements;
+  };
+
   const dataURLToUint8Array = (dataURL) => {
     const base64 = dataURL.split(',')[1];
     const binary = atob(base64);
