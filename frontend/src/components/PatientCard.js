@@ -221,6 +221,27 @@ export function PatientCard({ patient, onUpdate }) {
             />
           </DialogContent>
         </Dialog>
+
+        <AlertDialog open={!!examToDelete} onOpenChange={() => setExamToDelete(null)}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
+              <AlertDialogDescription>
+                Tem certeza que deseja deletar este exame? Esta ação não pode ser desfeita.
+                Todas as imagens e dados do exame serão permanentemente removidos.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={handleDeleteExam}
+                className="bg-red-600 hover:bg-red-700"
+              >
+                Deletar
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </CardContent>
     </Card>
   );
