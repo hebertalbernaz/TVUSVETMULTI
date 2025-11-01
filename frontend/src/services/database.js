@@ -141,19 +141,22 @@ class DatabaseService {
   // ============= TEMPLATES =============
   
   initializeDefaultTemplates() {
-    const organs = [
+    const templates = [];
+    
+    // Abdominal Ultrasound Templates
+    const abdominalOrgans = [
       'Estômago', 'Fígado', 'Baço', 'Rim Esquerdo', 'Rim Direito',
       'Vesícula Urinária', 'Adrenal Esquerda', 'Adrenal Direita',
       'Duodeno', 'Jejuno', 'Cólon', 'Ceco', 'Íleo', 'Linfonodos'
     ];
     
-    const templates = [];
-    organs.forEach((organ, idx) => {
+    abdominalOrgans.forEach((organ, idx) => {
       templates.push(
         {
           id: this.generateId(),
           organ,
           category: 'normal',
+          title: 'Achado Normal',
           text: `${organ} com dimensões, contornos, ecogenicidade e ecotextura preservados.`,
           order: idx * 10
         },
@@ -161,18 +164,88 @@ class DatabaseService {
           id: this.generateId(),
           organ,
           category: 'finding',
-          text: `${organ} apresenta alteração de ecogenicidade.`,
+          title: 'Alteração de Ecogenicidade',
+          text: `${organ} apresenta alteração de ecogenicidade, **sugestivo de** processo inflamatório.`,
           order: idx * 10 + 1
         },
         {
           id: this.generateId(),
           organ,
           category: 'finding',
-          text: `${organ} com aumento de dimensões.`,
+          title: 'Aumento de Dimensões',
+          text: `${organ} com aumento de dimensões, medindo {MEDIDA}.`,
           order: idx * 10 + 2
         }
       );
     });
+    
+    // Echocardiogram Templates
+    const echoStructures = [
+      { name: 'Valva Mitral', normal: 'Valva Mitral com estrutura e função preservadas, sem regurgitação significativa.', finding: 'Valva Mitral apresenta espessamento de folhetos, com regurgitação **moderada** ao Doppler.' },
+      { name: 'Valva Aórtica', normal: 'Valva Aórtica com estrutura preservada e abertura adequada.', finding: 'Valva Aórtica com estenose, velocidade máxima {MEDIDA}.' },
+      { name: 'Ventrículo Esquerdo (Modo M)', normal: 'Ventrículo Esquerdo com dimensões e espessura de paredes dentro dos limites da normalidade. Função sistólica preservada.', finding: 'Ventrículo Esquerdo com dilatação, DDFVE {MEDIDA}. Fração de ejeção reduzida.' }
+    ];
+    
+    echoStructures.forEach((struct, idx) => {
+      templates.push(
+        {
+          id: this.generateId(),
+          organ: struct.name,
+          category: 'normal',
+          title: 'Estrutura Normal',
+          text: struct.normal,
+          order: (100 + idx) * 10
+        },
+        {
+          id: this.generateId(),
+          organ: struct.name,
+          category: 'finding',
+          title: 'Alteração Detectada',
+          text: struct.finding,
+          order: (100 + idx) * 10 + 1
+        }
+      );
+    });
+    
+    // ECG Templates
+    templates.push(
+      {
+        id: this.generateId(),
+        organ: 'Análise de Ritmo',
+        category: 'normal',
+        title: 'Ritmo Sinusal Normal',
+        text: 'Ritmo sinusal regular, frequência cardíaca de {MEDIDA} bpm, *dentro dos parâmetros esperados para a espécie*.',
+        order: 200
+      },
+      {
+        id: this.generateId(),
+        organ: 'Análise de Ritmo',
+        category: 'finding',
+        title: 'Arritmia Sinusal',
+        text: 'Arritmia sinusal respiratória, frequência variando entre {MEDIDA} bpm. Achado **fisiológico** em cães.',
+        order: 201
+      }
+    );
+    
+    // Radiography Templates
+    templates.push(
+      {
+        id: this.generateId(),
+        organ: 'Tórax - Campos Pulmonares',
+        category: 'normal',
+        title: 'Campos Pulmonares Normais',
+        text: 'Campos pulmonares com padrão intersticial e vascular dentro da normalidade. Ausência de opacidades ou massas.',
+        order: 300
+      },
+      {
+        id: this.generateId(),
+        organ: 'Tórax - Campos Pulmonares',
+        category: 'finding',
+        title: 'Padrão Intersticial',
+        text: 'Padrão intersticial **difuso** em campos pulmonares, **compatível com** processo inflamatório ou edema.',
+        order: 301
+      }
+    );
     
     this.storage.setItem('templates', JSON.stringify(templates));
   }
