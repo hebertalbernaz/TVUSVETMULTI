@@ -197,24 +197,22 @@ export default function ExamPage() {
       const header = new Header({ children: headerChildren });
 
       // Patient + exam info
+      const examType = exam?.exam_type || 'ultrasound_abd';
+      const examTypeName = getExamTypeName(examType);
+      
       const docChildren = [
         new Paragraph({ text: `Paciente: ${patient?.name || ''} (${patient?.species === 'dog' ? 'Cão' : 'Gato'})`, heading: HeadingLevel.HEADING_2 }),
         new Paragraph({ text: `Raça: ${patient?.breed || ''} • Peso cadastrado: ${patient?.weight || ''} kg • Peso no exame: ${examWeight || ''} kg` }),
+        new Paragraph({ text: `Tipo de Exame: ${examTypeName}` }),
         new Paragraph({ text: `Data do exame: ${exam ? new Date(exam.exam_date).toLocaleDateString('pt-BR') : ''}` }),
         new Paragraph({ text: ' ' }),
         new Paragraph({ text: 'Laudo', heading: HeadingLevel.HEADING_2 }),
       ];
 
-      // Organ order and texts
-      const organOrder = [...ORGANS];
-      if (patient?.sex === 'male') {
-        if (patient?.is_neutered) organOrder.push(...REPRODUCTIVE_ORGANS_MALE_NEUTERED);
-        else organOrder.push(...REPRODUCTIVE_ORGANS_MALE);
-      } else {
-        if (!patient?.is_neutered) organOrder.push(...REPRODUCTIVE_ORGANS_FEMALE);
-      }
+      // Structure order - use dynamic structures based on exam type
+      const structureOrder = getStructuresForExam(examType, patient);
 
-      organOrder.forEach((organName) => {
+      structureOrder.forEach((organName) => {
         const od = organsData.find((o) => o.organ_name === organName);
         if (!od) return;
         if (od.report_text && od.report_text.trim()) {
