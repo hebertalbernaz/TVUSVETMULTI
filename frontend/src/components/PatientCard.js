@@ -5,10 +5,27 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Plus, FileText, Edit } from 'lucide-react';
+import { Plus, FileText, Edit, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { db } from '@/services/database';
 import { PatientForm } from './PatientForm';
+import { getAllExamTypes, getExamTypeName } from '@/lib/exam_types';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 export function PatientCard({ patient, onUpdate }) {
   const [exams, setExams] = useState([]);
