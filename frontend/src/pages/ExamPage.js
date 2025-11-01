@@ -8,7 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Upload, Save, Download, X, AlertCircle, Image as ImageIcon, FileText } from 'lucide-react';
+import { Upload, Save, Download, X, AlertCircle, Image as ImageIcon, FileText, Check } from 'lucide-react';
 import { toast } from 'sonner';
 import { db } from '@/services/database';
 import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType, ImageRun, Header, SectionType, PageBreak, Table, TableRow, TableCell, WidthType } from 'docx';
