@@ -492,6 +492,7 @@ export default function ExamPage() {
                 templates={organTemplates}
                 referenceValues={referenceValues.filter(rv => rv.organ === currentOrgan.organ_name && rv.species === patient.species && rv.size === patient.size)}
                 onChange={(field, value) => updateOrganData(currentOrganIndex, field, value)}
+                structureDefinition={structureDefinitions[currentOrganIndex]}
               />
             )}
           </div>
