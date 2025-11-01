@@ -96,6 +96,7 @@ class DatabaseService {
     const newExam = {
       ...examData,
       id: this.generateId(),
+      exam_type: examData.exam_type || 'ultrasound_abd', // Default to ultrasound abdominal
       exam_date: examData.exam_date || new Date().toISOString(),
       organs_data: examData.organs_data || [],
       images: examData.images || [],
