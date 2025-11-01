@@ -25,6 +25,7 @@ export default function ExamPage() {
   const [examWeight, setExamWeight] = useState('');
   const [examImages, setExamImages] = useState([]);
   const [uploading, setUploading] = useState(false);
+  const [reportLanguage, setReportLanguage] = useState('pt');
   const navigate = useNavigate();
 
   useEffect(() => {
