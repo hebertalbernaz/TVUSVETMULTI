@@ -12,16 +12,7 @@ import { Upload, Save, Download, X, AlertCircle, Image as ImageIcon, FileText } 
 import { toast } from 'sonner';
 import { db } from '@/services/database';
 import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType, ImageRun, Header, SectionType, PageBreak, Table, TableRow, TableCell, WidthType } from 'docx';
-
-const ORGANS = [
-  'Estômago', 'Fígado', 'Baço', 'Rim Esquerdo', 'Rim Direito',
-  'Vesícula Urinária', 'Adrenal Esquerda', 'Adrenal Direita',
-  'Duodeno', 'Jejuno', 'Cólon', 'Ceco', 'Íleo', 'Linfonodos'
-];
-
-const REPRODUCTIVE_ORGANS_MALE = ['Próstata', 'Testículo Direito', 'Testículo Esquerdo'];
-const REPRODUCTIVE_ORGANS_MALE_NEUTERED = ['Próstata'];
-const REPRODUCTIVE_ORGANS_FEMALE = ['Corpo Uterino', 'Corno Uterino Direito', 'Corno Uterino Esquerdo', 'Ovário Direito', 'Ovário Esquerdo'];
+import { getStructuresForExam, getExamTypeName } from '@/lib/exam_types';
 
 export default function ExamPage() {
   const { examId } = useParams();
