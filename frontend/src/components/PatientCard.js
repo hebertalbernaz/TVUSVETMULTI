@@ -32,6 +32,7 @@ export function PatientCard({ patient, onUpdate }) {
   const [examsCount, setExamsCount] = useState(0);
   const [showExams, setShowExams] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
+  const [examToDelete, setExamToDelete] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
