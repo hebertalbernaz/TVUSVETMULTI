@@ -59,6 +59,9 @@ export default function ExamPage() {
       // Initialize structures data dynamically based on exam type
       const examType = examRes.exam_type || 'ultrasound_abd';
       const allStructures = getStructuresForExam(examType, patientRes);
+      
+      // Store structure definitions for clinical measurements
+      setStructureDefinitions(allStructures);
 
       const initialOrgansData = allStructures.map(structure => ({
         organ_name: structure.label || structure,  // Support both new object format and old string format
