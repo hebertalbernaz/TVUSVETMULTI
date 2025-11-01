@@ -20,60 +20,48 @@ code {
 
 @layer base {
   :root {
-        /* Light Mode - Minimalist Elegant inspired by logo */
-        --background: 0 0% 98%;
-        --foreground: 0 0% 15%;
-        --card: 0 0% 100%;
-        --card-foreground: 0 0% 15%;
-        --popover: 0 0% 100%;
-        --popover-foreground: 0 0% 15%;
-        --primary: 330 100% 70%;
-        --primary-foreground: 0 0% 100%;
-        --secondary: 250 80% 90%;
-        --secondary-foreground: 0 0% 15%;
-        --muted: 0 0% 95%;
-        --muted-foreground: 0 0% 45%;
-        --accent: 250 80% 90%;
-        --accent-foreground: 0 0% 15%;
-        --destructive: 0 84% 60%;
-        --destructive-foreground: 0 0% 98%;
-        --border: 0 0% 90%;
-        --input: 0 0% 90%;
-        --ring: 330 100% 70%;
-        --chart-1: 330 100% 70%;
-        --chart-2: 250 80% 90%;
-        --chart-3: 197 37% 24%;
-        --chart-4: 43 74% 66%;
-        --chart-5: 27 87% 67%;
-        --radius: 0.5rem;
-    }
+    --background: 0 0% 100%;
+    --foreground: 240 10% 3.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 3.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 3.9%;
+    --primary: 330 80% 55%; /* Logo Pink */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 250 60% 96%; /* Logo Lavender (Light) */
+    --secondary-foreground: 240 10% 3.9%;
+    --muted: 240 5% 96%;
+    --muted-foreground: 240 4% 46%;
+    --accent: 250 60% 93%; /* Logo Lavender (Darker) */
+    --accent-foreground: 240 10% 3.9%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 6% 90%;
+    --input: 240 6% 90%;
+    --ring: 330 80% 55%; /* Logo Pink */
+    --radius: 0.5rem;
+  }
   .dark {
-        /* Dark Mode - Sophisticated dark inspired by logo */
-        --background: 0 0% 10%;
-        --foreground: 40 30% 90%;
-        --card: 0 0% 12%;
-        --card-foreground: 40 30% 90%;
-        --popover: 0 0% 12%;
-        --popover-foreground: 40 30% 90%;
-        --primary: 330 100% 70%;
-        --primary-foreground: 0 0% 10%;
-        --secondary: 250 60% 30%;
-        --secondary-foreground: 40 30% 90%;
-        --muted: 0 0% 18%;
-        --muted-foreground: 0 0% 60%;
-        --accent: 250 60% 30%;
-        --accent-foreground: 40 30% 90%;
-        --destructive: 0 62% 50%;
-        --destructive-foreground: 40 30% 90%;
-        --border: 0 0% 20%;
-        --input: 0 0% 20%;
-        --ring: 330 100% 70%;
-        --chart-1: 330 100% 70%;
-        --chart-2: 250 60% 50%;
-        --chart-3: 220 70% 50%;
-        --chart-4: 280 65% 60%;
-        --chart-5: 340 75% 55%;
-    }
+    --background: 240 10% 3.9%; /* Logo Dark Background */
+    --foreground: 40 30% 90%;   /* Logo Cream Text */
+    --card: 240 10% 3.9%;
+    --card-foreground: 40 30% 90%;
+    --popover: 240 10% 3.9%;
+    --popover-foreground: 40 30% 90%;
+    --primary: 330 80% 65%; /* Logo Pink (Lighter for Dark) */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 250 20% 20%; /* Logo Lavender (Dark) */
+    --secondary-foreground: 40 30% 90%;
+    --muted: 240 5% 15%;
+    --muted-foreground: 240 4% 56%;
+    --accent: 250 20% 25%; /* Logo Lavender (Darker) */
+    --accent-foreground: 40 30% 90%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 5% 15%;
+    --input: 240 5% 15%;
+    --ring: 330 80% 65%;
+  }
 }
 
 
