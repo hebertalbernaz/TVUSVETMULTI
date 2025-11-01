@@ -60,15 +60,30 @@ export function PatientCard({ patient, onUpdate }) {
     }
   };
 
-  const createNewExam = async () => {
+  const createNewExam = async (examType) => {
     try {
       const newExam = await db.createExam({
         patient_id: patient.id,
-        exam_weight: patient.weight
+        exam_weight: patient.weight,
+        exam_type: examType
       });
+      toast.success(`${getExamTypeName(examType)} criado!`);
       navigate(`/exam/${newExam.id}`);
     } catch (error) {
       toast.error('Erro ao criar exame');
+    }
+  };
+
+  const handleDeleteExam = async () => {
+    if (!examToDelete) return;
+    try {
+      await db.deleteExam(examToDelete);
+      toast.success('Exame deletado com sucesso');
+      loadExamsCount();
+      loadExams();
+      setExamToDelete(null);
+    } catch (error) {
+      toast.error('Erro ao deletar exame');
     }
   };
 
