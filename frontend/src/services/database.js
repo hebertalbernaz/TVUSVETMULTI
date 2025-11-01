@@ -142,15 +142,17 @@ class DatabaseService {
   
   initializeDefaultTemplates() {
     const templates = [];
+    let orderCounter = 0;
     
-    // Abdominal Ultrasound Templates
+    // ========== ABDOMINAL ULTRASOUND TEMPLATES ==========
     const abdominalOrgans = [
       'Estômago', 'Fígado', 'Baço', 'Rim Esquerdo', 'Rim Direito',
       'Vesícula Urinária', 'Adrenal Esquerda', 'Adrenal Direita',
-      'Duodeno', 'Jejuno', 'Cólon', 'Ceco', 'Íleo', 'Linfonodos'
+      'Duodeno', 'Jejuno', 'Cólon', 'Ceco', 'Íleo', 'Linfonodos',
+      'Próstata', 'Corpo Uterino', 'Ovário Direito', 'Ovário Esquerdo'
     ];
     
-    abdominalOrgans.forEach((organ, idx) => {
+    abdominalOrgans.forEach((organ) => {
       templates.push(
         {
           id: this.generateId(),
@@ -158,7 +160,7 @@ class DatabaseService {
           category: 'normal',
           title: 'Achado Normal',
           text: `${organ} com dimensões, contornos, ecogenicidade e ecotextura preservados.`,
-          order: idx * 10
+          order: orderCounter++
         },
         {
           id: this.generateId(),
@@ -166,7 +168,7 @@ class DatabaseService {
           category: 'finding',
           title: 'Alteração de Ecogenicidade',
           text: `${organ} apresenta alteração de ecogenicidade, **sugestivo de** processo inflamatório.`,
-          order: idx * 10 + 1
+          order: orderCounter++
         },
         {
           id: this.generateId(),
@@ -174,76 +176,440 @@ class DatabaseService {
           category: 'finding',
           title: 'Aumento de Dimensões',
           text: `${organ} com aumento de dimensões, medindo {MEDIDA}.`,
-          order: idx * 10 + 2
+          order: orderCounter++
         }
       );
     });
     
-    // Echocardiogram Templates
-    const echoStructures = [
-      { name: 'Valva Mitral', normal: 'Valva Mitral com estrutura e função preservadas, sem regurgitação significativa.', finding: 'Valva Mitral apresenta espessamento de folhetos, com regurgitação **moderada** ao Doppler.' },
-      { name: 'Valva Aórtica', normal: 'Valva Aórtica com estrutura preservada e abertura adequada.', finding: 'Valva Aórtica com estenose, velocidade máxima {MEDIDA}.' },
-      { name: 'Ventrículo Esquerdo (Modo M)', normal: 'Ventrículo Esquerdo com dimensões e espessura de paredes dentro dos limites da normalidade. Função sistólica preservada.', finding: 'Ventrículo Esquerdo com dilatação, DDFVE {MEDIDA}. Fração de ejeção reduzida.' }
-    ];
+    // ========== ECHOCARDIOGRAM TEMPLATES ==========
     
-    echoStructures.forEach((struct, idx) => {
-      templates.push(
-        {
-          id: this.generateId(),
-          organ: struct.name,
-          category: 'normal',
-          title: 'Estrutura Normal',
-          text: struct.normal,
-          order: (100 + idx) * 10
-        },
-        {
-          id: this.generateId(),
-          organ: struct.name,
-          category: 'finding',
-          title: 'Alteração Detectada',
-          text: struct.finding,
-          order: (100 + idx) * 10 + 1
-        }
-      );
-    });
-    
-    // ECG Templates
+    // Análise 2D (Modo-B)
     templates.push(
       {
         id: this.generateId(),
-        organ: 'Análise de Ritmo',
+        organ: 'Análise 2D (Modo-B)',
         category: 'normal',
-        title: 'Ritmo Sinusal Normal',
-        text: 'Ritmo sinusal regular, frequência cardíaca de {MEDIDA} bpm, *dentro dos parâmetros esperados para a espécie*.',
-        order: 200
+        title: 'Análise Morfológica Normal',
+        text: 'Análise morfológica das cavidades cardíacas e valvas atrioventriculares e semilunares *sem alterações* significativas. Contratilidade ventricular preservada.',
+        order: orderCounter++
       },
       {
         id: this.generateId(),
-        organ: 'Análise de Ritmo',
+        organ: 'Análise 2D (Modo-B)',
         category: 'finding',
-        title: 'Arritmia Sinusal',
-        text: 'Arritmia sinusal respiratória, frequência variando entre {MEDIDA} bpm. Achado **fisiológico** em cães.',
-        order: 201
+        title: 'Hipertrofia Ventricular',
+        text: 'Observa-se **hipertrofia concêntrica** do ventrículo esquerdo, com espessamento de parede livre e septo interventricular.',
+        order: orderCounter++
+      },
+      {
+        id: this.generateId(),
+        organ: 'Análise 2D (Modo-B)',
+        category: 'finding',
+        title: 'Dilatação Atrial',
+        text: 'Átrio esquerdo com **dilatação moderada**, relação AE/Ao aumentada. *Sugestivo de* sobrecarga de volume.',
+        order: orderCounter++
       }
     );
     
-    // Radiography Templates
+    // Ventrículo Esquerdo (Modo-M)
+    templates.push(
+      {
+        id: this.generateId(),
+        organ: 'Ventrículo Esquerdo (Modo-M)',
+        category: 'normal',
+        title: 'Dimensões e Função Normais',
+        text: 'Ventrículo esquerdo com dimensões e espessura de paredes dentro dos limites da normalidade. Fração de ejeção (FE) e fração de encurtamento (FS) preservadas.',
+        order: orderCounter++
+      },
+      {
+        id: this.generateId(),
+        organ: 'Ventrículo Esquerdo (Modo-M)',
+        category: 'finding',
+        title: 'Disfunção Sistólica',
+        text: 'Ventrículo esquerdo com **dilatação** e **redução da função sistólica**. FE: {MEDIDA}% (reduzida). FS: {MEDIDA}% (reduzida). *Compatível com* cardiomiopatia dilatada.',
+        order: orderCounter++
+      },
+      {
+        id: this.generateId(),
+        organ: 'Ventrículo Esquerdo (Modo-M)',
+        category: 'finding',
+        title: 'Hipertrofia Concêntrica',
+        text: 'Ventrículo esquerdo com **hipertrofia concêntrica**, espessamento do SIV e PPVE. Cavidade ventricular com dimensões normais ou reduzidas. *Sugestivo de* cardiomiopatia hipertrófica.',
+        order: orderCounter++
+      }
+    );
+    
+    // Relação Aorta/Átrio Esquerdo
+    templates.push(
+      {
+        id: this.generateId(),
+        organ: 'Relação Aorta/Átrio Esquerdo (Modo-M)',
+        category: 'normal',
+        title: 'Relação AE/Ao Normal',
+        text: 'Relação átrio esquerdo/aorta (AE/Ao) dentro dos limites da normalidade para a espécie.',
+        order: orderCounter++
+      },
+      {
+        id: this.generateId(),
+        organ: 'Relação Aorta/Átrio Esquerdo (Modo-M)',
+        category: 'finding',
+        title: 'Aumento da Relação AE/Ao',
+        text: 'Relação AE/Ao **aumentada** ({MEDIDA}), indicando dilatação atrial esquerda. *Compatível com* sobrecarga de volume ou insuficiência mitral.',
+        order: orderCounter++
+      }
+    );
+    
+    // Doppler Valvas
+    const valvas = [
+      { name: 'Análise Doppler (Valva Mitral)', 
+        normal: 'Fluxo transmitral com padrão de ondas E e A preservado. Relação E/A normal para a espécie. Ausência de regurgitação significativa.',
+        disease: 'Regurgitação mitral **moderada a severa** ao Doppler colorido. Espessamento e degeneração dos folhetos valvares. *Compatível com* degeneração mixomatosa.' },
+      { name: 'Análise Doppler (Valva Aórtica)',
+        normal: 'Fluxo aórtico com velocidade e gradiente de pressão dentro dos limites da normalidade. Ausência de estenose ou regurgitação.',
+        disease: 'Estenose aórtica detectada. Velocidade máxima: {MEDIDA} cm/s (aumentada). Gradiente de pressão: {MEDIDA} mmHg (elevado).' },
+      { name: 'Análise Doppler (Valva Pulmonar)',
+        normal: 'Fluxo pulmonar com padrão e velocidade normais. Ausência de estenose ou regurgitação significativa.',
+        disease: 'Estenose pulmonar. Velocidade máxima: {MEDIDA} cm/s. Gradiente de pressão: {MEDIDA} mmHg.' },
+      { name: 'Análise Doppler (Valva Tricúspide)',
+        normal: 'Fluxo tricúspide com padrão normal. Ausência de regurgitação significativa.',
+        disease: 'Regurgitação tricúspide presente. Estimativa de pressão sistólica do ventrículo direito (PSVD): {MEDIDA} mmHg. *Sugestivo de* hipertensão pulmonar.' }
+    ];
+    
+    valvas.forEach((valva) => {
+      templates.push(
+        {
+          id: this.generateId(),
+          organ: valva.name,
+          category: 'normal',
+          title: 'Análise Doppler Normal',
+          text: valva.normal,
+          order: orderCounter++
+        },
+        {
+          id: this.generateId(),
+          organ: valva.name,
+          category: 'finding',
+          title: 'Alteração Valvar',
+          text: valva.disease,
+          order: orderCounter++
+        }
+      );
+    });
+    
+    // Conclusão Ecocardiográfica
+    templates.push(
+      {
+        id: this.generateId(),
+        organ: 'Conclusão Ecocardiográfica',
+        category: 'normal',
+        title: 'Estudo Ecocardiográfico Normal',
+        text: 'Estudo ecocardiográfico transtorácico bidimensional com Doppler *sem alterações* significativas. Função sistólica e diastólica preservadas.',
+        order: orderCounter++
+      },
+      {
+        id: this.generateId(),
+        organ: 'Conclusão Ecocardiográfica',
+        category: 'finding',
+        title: 'Doença Valvar Degenerativa',
+        text: '**Doença Valvar Degenerativa Mixomatosa** (DVDM) de valva mitral, com regurgitação moderada a severa e dilatação atrial esquerda secundária. Indicação de acompanhamento cardiológico e terapia medicamentosa.',
+        order: orderCounter++
+      },
+      {
+        id: this.generateId(),
+        organ: 'Conclusão Ecocardiográfica',
+        category: 'finding',
+        title: 'Cardiomiopatia Dilatada',
+        text: '**Cardiomiopatia Dilatada** (CMD) com disfunção sistólica severa, dilatação de câmaras esquerdas e redução acentuada da fração de ejeção. Prognóstico reservado. Indicação de terapia intensiva e reavaliação periódica.',
+        order: orderCounter++
+      }
+    );
+    
+    // ========== ELECTROCARDIOGRAM TEMPLATES ==========
+    
+    // Ritmo e Frequência
+    templates.push(
+      {
+        id: this.generateId(),
+        organ: 'Ritmo e Frequência',
+        category: 'normal',
+        title: 'Ritmo Sinusal Normal',
+        text: 'Ritmo sinusal regular. Frequência cardíaca: {MEDIDA} bpm. *Dentro dos limites da normalidade* para a espécie.',
+        order: orderCounter++
+      },
+      {
+        id: this.generateId(),
+        organ: 'Ritmo e Frequência',
+        category: 'finding',
+        title: 'Arritmia Sinusal Respiratória',
+        text: 'Arritmia sinusal respiratória, com variação da frequência cardíaca durante os ciclos respiratórios. Achado **fisiológico** em cães. Frequência média: {MEDIDA} bpm.',
+        order: orderCounter++
+      },
+      {
+        id: this.generateId(),
+        organ: 'Ritmo e Frequência',
+        category: 'finding',
+        title: 'Taquicardia Sinusal',
+        text: 'Taquicardia sinusal. Frequência cardíaca: {MEDIDA} bpm (elevada). *Pode ser secundária a* estresse, dor, febre ou cardiopatia.',
+        order: orderCounter++
+      },
+      {
+        id: this.generateId(),
+        organ: 'Ritmo e Frequência',
+        category: 'finding',
+        title: 'Bradicardia Sinusal',
+        text: 'Bradicardia sinusal. Frequência cardíaca: {MEDIDA} bpm (reduzida). Investigar causas metabólicas ou medicamentosas.',
+        order: orderCounter++
+      }
+    );
+    
+    // Medições ECG
+    templates.push(
+      {
+        id: this.generateId(),
+        organ: 'Medições (Ondas e Intervalos)',
+        category: 'normal',
+        title: 'Medições Dentro da Normalidade',
+        text: 'Onda P, complexo QRS, intervalos PR e QT dentro dos limites da normalidade para a espécie.',
+        order: orderCounter++
+      },
+      {
+        id: this.generateId(),
+        organ: 'Medições (Ondas e Intervalos)',
+        category: 'finding',
+        title: 'Aumento de Onda P',
+        text: 'Onda P **aumentada** em duração e/ou amplitude. *Sugestivo de* sobrecarga atrial (P-pulmonale ou P-mitrale).',
+        order: orderCounter++
+      },
+      {
+        id: this.generateId(),
+        organ: 'Medições (Ondas e Intervalos)',
+        category: 'finding',
+        title: 'Alargamento de QRS',
+        text: 'Complexo QRS **alargado** ({MEDIDA} ms). *Compatível com* distúrbio de condução intraventricular ou bloqueio de ramo.',
+        order: orderCounter++
+      }
+    );
+    
+    // Conclusão ECG
+    templates.push(
+      {
+        id: this.generateId(),
+        organ: 'Conclusão Ritmológica',
+        category: 'normal',
+        title: 'Eletrocardiograma Normal',
+        text: 'Eletrocardiograma *sem alterações* significativas. Ritmo sinusal regular, frequência cardíaca adequada, ondas e intervalos dentro dos limites da normalidade.',
+        order: orderCounter++
+      },
+      {
+        id: this.generateId(),
+        organ: 'Conclusão Ritmológica',
+        category: 'finding',
+        title: 'Complexos Ventriculares Prematuros',
+        text: 'Presença de **Complexos Ventriculares Prematuros** (CVPs) isolados. Recomenda-se investigação de causa subjacente e acompanhamento.',
+        order: orderCounter++
+      },
+      {
+        id: this.generateId(),
+        organ: 'Conclusão Ritmológica',
+        category: 'finding',
+        title: 'Bloqueio Atrioventricular',
+        text: '**Bloqueio Atrioventricular de 1º grau**. Intervalo PR prolongado ({MEDIDA} ms). Monitoramento recomendado.',
+        order: orderCounter++
+      },
+      {
+        id: this.generateId(),
+        organ: 'Conclusão Ritmológica',
+        category: 'finding',
+        title: 'Fibrilação Atrial',
+        text: '**Fibrilação Atrial** detectada. Ausência de ondas P, ritmo irregularmente irregular. Indicação de terapia antiarrítmica e anticoagulante.',
+        order: orderCounter++
+      }
+    );
+    
+    // ========== RADIOGRAPHY TEMPLATES ==========
+    
+    // Campos Pulmonares
     templates.push(
       {
         id: this.generateId(),
         organ: 'Tórax - Campos Pulmonares',
         category: 'normal',
         title: 'Campos Pulmonares Normais',
-        text: 'Campos pulmonares com padrão intersticial e vascular dentro da normalidade. Ausência de opacidades ou massas.',
-        order: 300
+        text: 'Campos pulmonares com radiotransparência preservada, padrão intersticial e vascular dentro da normalidade. Ausência de massas, nódulos ou consolidações.',
+        order: orderCounter++
       },
       {
         id: this.generateId(),
         organ: 'Tórax - Campos Pulmonares',
         category: 'finding',
-        title: 'Padrão Intersticial',
-        text: 'Padrão intersticial **difuso** em campos pulmonares, **compatível com** processo inflamatório ou edema.',
-        order: 301
+        title: 'Padrão Bronco-Intersticial',
+        text: 'Padrão **bronco-intersticial difuso** em campos pulmonares. *Compatível com* bronquite crônica ou pneumonite.',
+        order: orderCounter++
+      },
+      {
+        id: this.generateId(),
+        organ: 'Tórax - Campos Pulmonares',
+        category: 'finding',
+        title: 'Nódulo Pulmonar',
+        text: 'Imagem nodular circunscrita em campo pulmonar, medindo aproximadamente {MEDIDA}. Diagnósticos diferenciais: neoplasia, granuloma, abscesso. Recomenda-se investigação complementar.',
+        order: orderCounter++
+      },
+      {
+        id: this.generateId(),
+        organ: 'Tórax - Campos Pulmonares',
+        category: 'finding',
+        title: 'Edema Pulmonar',
+        text: 'Padrão **alveolar difuso** em região perihilar, *sugestivo de* edema pulmonar cardiogênico.',
+        order: orderCounter++
+      }
+    );
+    
+    // Silhueta Cardíaca
+    templates.push(
+      {
+        id: this.generateId(),
+        organ: 'Tórax - Silhueta Cardíaca',
+        category: 'normal',
+        title: 'Silhueta Cardíaca Normal',
+        text: 'Silhueta cardíaca com dimensões e contornos preservados. VHS (Vertebral Heart Score) dentro dos limites da normalidade.',
+        order: orderCounter++
+      },
+      {
+        id: this.generateId(),
+        organ: 'Tórax - Silhueta Cardíaca',
+        category: 'finding',
+        title: 'Cardiomegalia',
+        text: '**Cardiomegalia** detectada. VHS: {MEDIDA}v (aumentado). Aumento predominante de câmaras esquerdas. *Compatível com* doença valvar ou cardiomiopatia.',
+        order: orderCounter++
+      },
+      {
+        id: this.generateId(),
+        organ: 'Tórax - Silhueta Cardíaca',
+        category: 'finding',
+        title: 'Aumento Atrial Esquerdo',
+        text: 'Aumento de átrio esquerdo, com elevação de brônquio principal esquerdo e abaulamento de borda cardíaca às 2-3 horas (projeção VD). *Sugestivo de* doença valvar mitral.',
+        order: orderCounter++
+      }
+    );
+    
+    // Abdômen
+    templates.push(
+      {
+        id: this.generateId(),
+        organ: 'Abdômen - Serosas e Fígado',
+        category: 'normal',
+        title: 'Cavidade Abdominal Normal',
+        text: 'Cavidade abdominal com contraste de serosas preservado. Fígado com dimensões e radiopacidade normais.',
+        order: orderCounter++
+      },
+      {
+        id: this.generateId(),
+        organ: 'Abdômen - Serosas e Fígado',
+        category: 'finding',
+        title: 'Efusão Abdominal',
+        text: 'Perda de definição de serosas abdominais, *sugestivo de* **efusão abdominal** (ascite). Recomenda-se abdominocentese para análise do líquido.',
+        order: orderCounter++
+      },
+      {
+        id: this.generateId(),
+        organ: 'Abdômen - Serosas e Fígado',
+        category: 'finding',
+        title: 'Hepatomegalia',
+        text: '**Hepatomegalia** radiográfica, com deslocamento caudal do estômago. Investigar causas metabólicas, congestivas ou neoplásicas.',
+        order: orderCounter++
+      }
+    );
+    
+    // Sistema Musculoesquelético
+    templates.push(
+      {
+        id: this.generateId(),
+        organ: 'Sistema Musculoesquelético',
+        category: 'normal',
+        title: 'Estruturas Ósseas Normais',
+        text: 'Estruturas ósseas com densidade, alinhamento e contornos preservados. Ausência de fraturas, luxações ou lesões líticas/blásticas.',
+        order: orderCounter++
+      },
+      {
+        id: this.generateId(),
+        organ: 'Sistema Musculoesquelético',
+        category: 'finding',
+        title: 'Osteoartrose',
+        text: 'Sinais de **osteoartrose** em articulação, com formação de osteófitos, esclerose subcondral e redução do espaço articular.',
+        order: orderCounter++
+      },
+      {
+        id: this.generateId(),
+        organ: 'Sistema Musculoesquelético',
+        category: 'finding',
+        title: 'Fratura',
+        text: 'Solução de continuidade em diáfise óssea, *compatível com* **fratura**. Recomenda-se avaliação ortopédica.',
+        order: orderCounter++
+      }
+    );
+    
+    // Conclusão Radiográfica
+    templates.push(
+      {
+        id: this.generateId(),
+        organ: 'Conclusão Radiográfica',
+        category: 'normal',
+        title: 'Estudo Radiográfico Normal',
+        text: 'Estudo radiográfico *sem alterações* significativas. Estruturas avaliadas dentro dos limites da normalidade.',
+        order: orderCounter++
+      }
+    );
+    
+    // ========== TOMOGRAPHY TEMPLATES ==========
+    
+    templates.push(
+      {
+        id: this.generateId(),
+        organ: 'Informações do Estudo',
+        category: 'normal',
+        title: 'Protocolo de Estudo',
+        text: 'Estudo tomográfico de [região] realizado em planos axiais, com cortes de [espessura]mm. Fase [pré/pós-contraste].',
+        order: orderCounter++
+      },
+      {
+        id: this.generateId(),
+        organ: 'Achados - Parênquima Pulmonar',
+        category: 'normal',
+        title: 'Parênquima Pulmonar Normal',
+        text: 'Parênquima pulmonar com atenuação preservada, sem nódulos, massas ou consolidações. Árvore traqueobrônquica pérvea.',
+        order: orderCounter++
+      },
+      {
+        id: this.generateId(),
+        organ: 'Achados - Parênquima Pulmonar',
+        category: 'finding',
+        title: 'Nódulo Pulmonar',
+        text: 'Formação nodular em lobo pulmonar, medindo {MEDIDA}, com atenuação de aproximadamente {MEDIDA} HU. Diagnósticos diferenciais: neoplasia primária ou metastática, granuloma.',
+        order: orderCounter++
+      },
+      {
+        id: this.generateId(),
+        organ: 'Achados - Mediastino',
+        category: 'finding',
+        title: 'Linfonodopatia Mediastinal',
+        text: 'Linfonodos mediastinais **aumentados**, com dimensões superiores aos valores de referência. *Sugestivo de* processo inflamatório ou neoplásico.',
+        order: orderCounter++
+      },
+      {
+        id: this.generateId(),
+        organ: 'Conclusão Tomográfica',
+        category: 'normal',
+        title: 'Estudo Tomográfico Normal',
+        text: 'Estudo tomográfico *sem alterações* significativas nas estruturas avaliadas.',
+        order: orderCounter++
+      },
+      {
+        id: this.generateId(),
+        organ: 'Conclusão Tomográfica',
+        category: 'finding',
+        title: 'Processo Neoplásico',
+        text: 'Achados tomográficos **compatíveis com** processo neoplásico. Recomenda-se biópsia para diagnóstico histopatológico definitivo e estadiamento complementar.',
+        order: orderCounter++
       }
     );
     
