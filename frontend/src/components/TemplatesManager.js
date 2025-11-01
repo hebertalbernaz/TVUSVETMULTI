@@ -107,15 +107,17 @@ export function TemplatesManager({ templates, onUpdate }) {
 
   const startEdit = (template) => {
     setEditingId(template.id);
+    setEditTitle(template.title || '');
     setEditText(template.text);
   };
 
   const saveEdit = async (templateId) => {
     try {
       const template = templates.find(t => t.id === templateId);
-      await db.updateTemplate(templateId, { ...template, text: editText });
+      await db.updateTemplate(templateId, { ...template, title: editTitle, text: editText });
       toast.success('Texto atualizado!');
       setEditingId(null);
+      setEditTitle('');
       setEditText('');
       onUpdate();
     } catch (error) {
@@ -125,6 +127,7 @@ export function TemplatesManager({ templates, onUpdate }) {
 
   const cancelEdit = () => {
     setEditingId(null);
+    setEditTitle('');
     setEditText('');
   };
 
