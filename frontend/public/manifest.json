@@ -1,7 +1,7 @@
 {
-  "name": "TVUSVET Laudos",
-  "short_name": "TVUSVET",
-  "description": "Sistema de Ultrassonografia Veterinária - Laudos Profissionais",
+  "name": "TVUSVET Multi Laudos",
+  "short_name": "TVUSVET Multi Laudos",
+  "description": "Sistema Multi-Modal de Diagnóstico Veterinário - Laudos Profissionais",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#f0fdfa",
