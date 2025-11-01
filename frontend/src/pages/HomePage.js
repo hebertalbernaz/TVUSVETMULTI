@@ -67,7 +67,8 @@ export default function HomePage() {
               className="max-w-xs h-auto"
             />
           </div>
-          <div className="flex gap-3">
+          <div className="flex gap-3 items-center">
+            <ThemeToggle />
             <Button
               onClick={exportBackup}
               variant="outline"
@@ -87,7 +88,6 @@ export default function HomePage() {
             <Button
               onClick={() => {setEditingPatient(null); setShowNewPatient(true);}}
               data-testid="new-patient-button"
-              className="bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700"
             >
               <Plus className="mr-2 h-4 w-4" />
               Novo Paciente
