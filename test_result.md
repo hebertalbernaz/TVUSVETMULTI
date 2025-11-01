@@ -107,62 +107,50 @@ user_problem_statement: "Expandir TVUSVET para sistema multi-modal de diagnósti
 backend: []
 
 frontend:
-  - task: "Migrar App para 100% offline: remover axios/API e usar db service"
+  - task: "Sistema Multi-Modal de Exames"
     implemented: true
     working: true
-    file: "/app/frontend/src/App.js"
+    file: "/app/frontend/src/lib/exam_types.js, /app/frontend/src/components/PatientCard.js, /app/frontend/src/pages/ExamPage.js"
     stuck_count: 0
     priority: "high"
     needs_retesting: false
     status_history:
       - working: true
         agent: "main"
-        comment: "Atualizado App.js para roteamento simples e inicialização do db offline"
-      - working: true
-        agent: "testing"
-        comment: "✅ SMOKE TEST PASSED: App loads correctly, title shows 'TVUSVET Laudos', database initializes offline, no API calls detected, no license modal appears"
-  - task: "Criar ExamPage offline com export DOCX e imagens"
+        comment: "Criado exam_types.js com 5 tipos de exame (Ultrassom Abdominal, Ecocardiograma, ECG, Radiografia, Tomografia). Dropdown no PatientCard para seleção do tipo. ExamPage carrega estruturas dinamicamente baseado no exam_type. Testado com sucesso todos os 5 tipos de exame."
+  - task: "Deleção de Exames com Confirmação"
     implemented: true
     working: true
-    file: "/app/frontend/src/pages/ExamPage.js"
-    stuck_count: 0
-    priority: "high"
-    needs_retesting: false
-    status_history:
-      - working: true
-        agent: "main"
-        comment: "Novo ExamPage usa db service, upload base64, alerta de referência e export DOCX com 6 imagens por página e timbrado"
-      - working: true
-        agent: "testing"
-        comment: "✅ SMOKE TEST PASSED: Exam page navigation works, weight input functional, measurements can be added (5.5 cm test passed), export DOCX button works. Fixed ESLint error (react-hooks/exhaustive-deps). Image upload skipped due to test environment limitations"
-  - task: "Settings: Letterhead com preview local base64"
-    implemented: true
-    working: true
-    file: "/app/frontend/src/components/LetterheadSettings.js"
+    file: "/app/frontend/src/components/PatientCard.js, /app/frontend/src/services/database.js"
     stuck_count: 0
     priority: "medium"
     needs_retesting: false
     status_history:
       - working: true
         agent: "main"
-        comment: "Aceita PNG/JPG/PDF/DOCX; preview para imagem, mensagem para PDF/DOCX"
-      - working: true
-        agent: "testing"
-        comment: "✅ SMOKE TEST PASSED: Settings page loads, clinic name can be edited and saved ('Clínica Vet X' test passed). Letterhead upload functionality present but not fully tested due to test environment limitations"
-  - task: "HomePage + SettingsPage integradas ao db"
+        comment: "Adicionado botão de delete (trash icon) na lista de exames. AlertDialog para confirmação antes da exclusão. Função deleteExam no database.js funcionando."
+  - task: "Sistema de Tradução Offline PT↔EN"
     implemented: true
     working: true
-    file: "/app/frontend/src/pages/HomePage.js, /app/frontend/src/pages/SettingsPage.js"
+    file: "/app/frontend/src/services/translation.js, /app/frontend/src/pages/ExamPage.js"
     stuck_count: 0
     priority: "high"
     needs_retesting: false
     status_history:
       - working: true
         agent: "main"
-        comment: "Ambas usam db.get*/update* e incluem import/export backup"
+        comment: "Criado translation.js com dicionário completo PT/EN para todos os tipos de exame. Seletor de idioma (🇧🇷 Português / 🇺🇸 English) adicionado ao ExamPage. Export DOCX traduz automaticamente todo o conteúdo do laudo. Testado com sucesso."
+  - task: "Limpeza do Projeto - Remoção do Backend"
+    implemented: true
+    working: true
+    file: "/"
+    stuck_count: 0
+    priority: "low"
+    needs_retesting: false
+    status_history:
       - working: true
-        agent: "testing"
-        comment: "✅ SMOKE TEST PASSED: Patient creation flow works (Rex/Ana/Labrador/25kg/Médio/Macho/not castrated), patient card appears, patient persists after navigation, exam creation works, all core functionality operational"
+        agent: "main"
+        comment: "Diretório /app/backend/ removido. Sistema 100% offline e frontend-only."
 
 metadata:
   created_by: "main_agent"
