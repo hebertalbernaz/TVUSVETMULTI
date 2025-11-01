@@ -427,11 +427,11 @@ export default function ExamPage() {
             )}
           </div>
 
-          {/* Sidebar de Órgãos */}
+          {/* Sidebar de Estruturas */}
           <div className="col-span-2">
             <Card>
               <CardHeader className="pb-3">
-                <CardTitle className="text-sm">Órgãos</CardTitle>
+                <CardTitle className="text-sm">Estruturas</CardTitle>
               </CardHeader>
               <CardContent className="p-2">
                 <ScrollArea className="h-[calc(100vh-300px)]">
