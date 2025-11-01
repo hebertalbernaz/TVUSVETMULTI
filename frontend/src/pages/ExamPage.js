@@ -264,7 +264,10 @@ export default function ExamPage() {
           docChildren.push(new Paragraph({ text: t(organName), heading: HeadingLevel.HEADING_3 }));
           const translatedText = t(od.report_text);
           const lines = translatedText.split('\n');
-          lines.forEach((line) => docChildren.push(new Paragraph({ text: line })));
+          lines.forEach((line) => {
+            const runs = parseTextToRuns(line, od.measurements);
+            docChildren.push(new Paragraph({ children: runs }));
+          });
           docChildren.push(new Paragraph({ text: ' ' }));
         }
       });
