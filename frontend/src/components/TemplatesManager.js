@@ -166,7 +166,7 @@ export function TemplatesManager({ templates, onUpdate }) {
             <div className="space-y-3">
               <Select value={newTemplate.organ} onValueChange={(value) => setNewTemplate({ ...newTemplate, organ: value })}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Selecione o órgão" />
+                  <SelectValue placeholder="Selecione o órgão/estrutura" />
                 </SelectTrigger>
                 <SelectContent>
                   {ORGANS.map(organ => (
@@ -174,12 +174,61 @@ export function TemplatesManager({ templates, onUpdate }) {
                   ))}
                 </SelectContent>
               </Select>
-              <Textarea
-                placeholder="Digite o texto padrão..."
-                value={newTemplate.text}
-                onChange={(e) => setNewTemplate({ ...newTemplate, text: e.target.value })}
-                rows={3}
-              />
+              
+              <div>
+                <Label htmlFor="new-title" className="text-sm">Título</Label>
+                <Input
+                  id="new-title"
+                  placeholder="Ex: Achado Normal"
+                  value={newTemplate.title}
+                  onChange={(e) => setNewTemplate({ ...newTemplate, title: e.target.value })}
+                  className="mt-1"
+                />
+              </div>
+              
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <Label htmlFor="new-text" className="text-sm">Texto</Label>
+                  <div className="flex gap-1">
+                    <Button 
+                      type="button" 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={() => applyBold(false)}
+                      title="Negrito"
+                    >
+                      <Bold className="h-3 w-3" />
+                    </Button>
+                    <Button 
+                      type="button" 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={() => applyItalic(false)}
+                      title="Itálico"
+                    >
+                      <Italic className="h-3 w-3" />
+                    </Button>
+                    <Button 
+                      type="button" 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={() => insertMeasurement(false)}
+                      title="Inserir Medida"
+                    >
+                      <Hash className="h-3 w-3" />
+                    </Button>
+                  </div>
+                </div>
+                <Textarea
+                  id="new-text"
+                  ref={textareaRef}
+                  placeholder="Digite o texto padrão... Use **negrito** e *itálico*"
+                  value={newTemplate.text}
+                  onChange={(e) => setNewTemplate({ ...newTemplate, text: e.target.value })}
+                  rows={4}
+                />
+              </div>
+              
               <div className="flex gap-2">
                 <Button onClick={createTemplate} size="sm" disabled={!newTemplate.organ || !newTemplate.text}>
                   <Save className="mr-2 h-3 w-3" />
