@@ -102,7 +102,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "Refatorar TVUSVET para 100% offline, sem backend/licença; manter todas as funcionalidades (pacientes, exames, imagens, templates, valores de referência, timbrado) e exportar DOCX; preparar testes automatizados e posteriormente executar testes mais profundos."
+user_problem_statement: "Expandir TVUSVET para sistema multi-modal de diagnóstico veterinário. Adicionar suporte para: Ecocardiograma, ECG, Radiografia e Tomografia além do Ultrassom Abdominal. Implementar deleção de exames, tradução offline PT/EN, injeção dinâmica de medidas, e preparar para distribuição desktop via Tauri."
 
 backend: []
 
