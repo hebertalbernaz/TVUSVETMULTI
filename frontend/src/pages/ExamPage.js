@@ -301,9 +301,14 @@ export default function ExamPage() {
       <div className="container mx-auto p-6">
         <div className="flex justify-between items-start mb-6">
           <div className="flex-1">
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-teal-600 to-emerald-600 bg-clip-text text-transparent mb-2" style={{ fontFamily: 'Manrope, sans-serif' }}>
-              Exame de {patient.name}
-            </h1>
+            <div className="flex items-center gap-3 mb-2">
+              <h1 className="text-3xl font-bold bg-gradient-to-r from-teal-600 to-emerald-600 bg-clip-text text-transparent" style={{ fontFamily: 'Manrope, sans-serif' }}>
+                Exame de {patient.name}
+              </h1>
+              <Badge variant="secondary" className="text-sm">
+                {getExamTypeName(exam?.exam_type || 'ultrasound_abd')}
+              </Badge>
+            </div>
             <p className="text-gray-600 mb-3">
               {patient.breed} • {new Date(exam.exam_date).toLocaleDateString('pt-BR')}
             </p>
