@@ -253,10 +253,46 @@ export function TemplatesManager({ templates, onUpdate }) {
                     <div key={template.id} className="p-3 bg-gray-50 rounded-lg border">
                       {editingId === template.id ? (
                         <div className="space-y-2">
+                          <Input
+                            placeholder="Título"
+                            value={editTitle}
+                            onChange={(e) => setEditTitle(e.target.value)}
+                            className="font-medium"
+                          />
+                          <div className="flex items-center justify-end gap-1 mb-1">
+                            <Button 
+                              type="button" 
+                              variant="outline" 
+                              size="sm" 
+                              onClick={() => applyBold(true)}
+                              title="Negrito"
+                            >
+                              <Bold className="h-3 w-3" />
+                            </Button>
+                            <Button 
+                              type="button" 
+                              variant="outline" 
+                              size="sm" 
+                              onClick={() => applyItalic(true)}
+                              title="Itálico"
+                            >
+                              <Italic className="h-3 w-3" />
+                            </Button>
+                            <Button 
+                              type="button" 
+                              variant="outline" 
+                              size="sm" 
+                              onClick={() => insertMeasurement(true)}
+                              title="Inserir Medida"
+                            >
+                              <Hash className="h-3 w-3" />
+                            </Button>
+                          </div>
                           <Textarea
+                            ref={editTextareaRef}
                             value={editText}
                             onChange={(e) => setEditText(e.target.value)}
-                            rows={3}
+                            rows={4}
                             className="w-full"
                           />
                           <div className="flex gap-2">
@@ -272,7 +308,12 @@ export function TemplatesManager({ templates, onUpdate }) {
                         </div>
                       ) : (
                         <div className="flex justify-between items-start">
-                          <p className="text-sm flex-1">{template.text}</p>
+                          <div className="flex-1">
+                            {template.title && (
+                              <h4 className="font-semibold text-sm mb-1 text-gray-800">{template.title}</h4>
+                            )}
+                            <p className="text-sm text-gray-700">{template.text}</p>
+                          </div>
                           <div className="flex gap-1 ml-2">
                             <Button
                               onClick={() => startEdit(template)}
