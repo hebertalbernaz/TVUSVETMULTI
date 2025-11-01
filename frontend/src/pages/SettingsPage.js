@@ -79,13 +79,14 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50" data-testid="settings-page">
+    <div className="min-h-screen bg-background" data-testid="settings-page">
       <div className="container mx-auto p-6">
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-teal-600 to-emerald-600 bg-clip-text text-transparent" style={{ fontFamily: 'Manrope, sans-serif' }}>
+          <h1 className="text-3xl font-bold text-foreground" style={{ fontFamily: 'Manrope, sans-serif' }}>
             Configurações
           </h1>
-          <div className="flex gap-2">
+          <div className="flex gap-2 items-center">
+            <ThemeToggle />
             <label htmlFor="import-backup">
               <input
                 id="import-backup"
@@ -99,7 +100,7 @@ export default function SettingsPage() {
                 Importar Backup
               </Button>
             </label>
-            <Button onClick={() => navigate('/')} variant="outline">
+            <Button onClick={() => navigate('/')} variant="ghost">
               <X className="mr-2 h-4 w-4" />
               Voltar
             </Button>
