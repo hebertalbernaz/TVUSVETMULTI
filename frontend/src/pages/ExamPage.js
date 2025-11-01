@@ -163,6 +163,37 @@ export default function ExamPage() {
     return bytes;
   };
 
+  // Parse text with markdown and measurement placeholders
+  const parseTextToRuns = (text, measurements) => {
+    // Replace {MEDIDA} with first available measurement
+    let processedText = text;
+    if (measurements && Object.keys(measurements).length > 0) {
+      const firstMeasurement = Object.values(measurements)[0];
+      const measurementText = `${firstMeasurement.value} ${firstMeasurement.unit || ''}`;
+      processedText = processedText.replace(/{MEDIDA}/g, measurementText);
+    }
+    
+    // Parse markdown **bold** and *italic*
+    const runs = [];
+    const regex = /(\*\*([^*]+)\*\*)|(\*([^*]+)\*)|([^*]+)/g;
+    let match;
+    
+    while ((match = regex.exec(processedText)) !== null) {
+      if (match[2]) {
+        // Bold text
+        runs.push(new TextRun({ text: match[2], bold: true }));
+      } else if (match[4]) {
+        // Italic text
+        runs.push(new TextRun({ text: match[4], italic: true }));
+      } else if (match[5]) {
+        // Regular text
+        runs.push(new TextRun({ text: match[5] }));
+      }
+    }
+    
+    return runs.length > 0 ? runs : [new TextRun({ text: processedText })];
+  };
+
   const exportToDocx = async () => {
     try {
       await saveExam();
