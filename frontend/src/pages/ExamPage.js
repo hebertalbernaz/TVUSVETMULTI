@@ -259,7 +259,7 @@ export default function ExamPage() {
           }));
 
           docChildren.push(new Paragraph({ text: ' ' }));
-          docChildren.push(new Paragraph({ text: 'Imagens', heading: HeadingLevel.HEADING_3 }));
+          docChildren.push(new Paragraph({ text: t('Imagens'), heading: HeadingLevel.HEADING_3 }));
           docChildren.push(new Table({
             width: { size: 100, type: WidthType.PERCENTAGE },
             rows,
