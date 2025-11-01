@@ -11,6 +11,7 @@ import { db } from '@/services/database';
 import { TemplatesManager } from '@/components/TemplatesManager';
 import { ReferenceValuesManager } from '@/components/ReferenceValuesManager';
 import { LetterheadSettings } from '@/components/LetterheadSettings';
+import { ThemeToggle } from '@/components/ThemeToggle';
 
 export default function SettingsPage() {
   const [settings, setSettings] = useState(null);
