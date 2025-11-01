@@ -26,12 +26,79 @@ export function TemplatesManager({ templates, onUpdate }) {
   const textareaRef = useRef(null);
   const editTextareaRef = useRef(null);
 
+  // Rich text formatting helpers
+  const wrapSelection = (textarea, prefix, suffix) => {
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const text = textarea.value;
+    const selectedText = text.substring(start, end);
+    
+    if (selectedText) {
+      const wrappedText = prefix + selectedText + suffix;
+      const newText = text.substring(0, start) + wrappedText + text.substring(end);
+      return { newText, newCursorPos: start + prefix.length + selectedText.length + suffix.length };
+    }
+    return null;
+  };
+
+  const insertAtCursor = (textarea, insertText) => {
+    const start = textarea.selectionStart;
+    const text = textarea.value;
+    const newText = text.substring(0, start) + insertText + text.substring(start);
+    return { newText, newCursorPos: start + insertText.length };
+  };
+
+  const applyBold = (isEdit = false) => {
+    const textarea = isEdit ? editTextareaRef.current : textareaRef.current;
+    if (!textarea) return;
+    
+    const result = wrapSelection(textarea, '**', '**');
+    if (result) {
+      if (isEdit) {
+        setEditText(result.newText);
+      } else {
+        setNewTemplate({ ...newTemplate, text: result.newText });
+      }
+      setTimeout(() => textarea.setSelectionRange(result.newCursorPos, result.newCursorPos), 0);
+    }
+  };
+
+  const applyItalic = (isEdit = false) => {
+    const textarea = isEdit ? editTextareaRef.current : textareaRef.current;
+    if (!textarea) return;
+    
+    const result = wrapSelection(textarea, '*', '*');
+    if (result) {
+      if (isEdit) {
+        setEditText(result.newText);
+      } else {
+        setNewTemplate({ ...newTemplate, text: result.newText });
+      }
+      setTimeout(() => textarea.setSelectionRange(result.newCursorPos, result.newCursorPos), 0);
+    }
+  };
+
+  const insertMeasurement = (isEdit = false) => {
+    const textarea = isEdit ? editTextareaRef.current : textareaRef.current;
+    if (!textarea) return;
+    
+    const result = insertAtCursor(textarea, '{MEDIDA}');
+    if (result) {
+      if (isEdit) {
+        setEditText(result.newText);
+      } else {
+        setNewTemplate({ ...newTemplate, text: result.newText });
+      }
+      setTimeout(() => textarea.setSelectionRange(result.newCursorPos, result.newCursorPos), 0);
+    }
+  };
+
   const createTemplate = async () => {
     try {
       await db.createTemplate(newTemplate);
       toast.success('Texto adicionado!');
       setShowNew(false);
-      setNewTemplate({ organ: '', category: 'normal', text: '' });
+      setNewTemplate({ organ: '', category: 'normal', title: '', text: '' });
       onUpdate();
     } catch (error) {
       toast.error('Erro ao adicionar texto');
