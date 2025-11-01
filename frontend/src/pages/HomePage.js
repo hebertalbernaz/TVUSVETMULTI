@@ -56,14 +56,15 @@ export default function HomePage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50" data-testid="home-page">
+    <div className="min-h-screen bg-background" data-testid="home-page">
       <div className="container mx-auto p-6">
         <div className="flex justify-between items-center mb-8">
-          <div>
-            <h1 className="text-5xl font-bold bg-gradient-to-r from-teal-600 to-emerald-600 bg-clip-text text-transparent mb-2" style={{ fontFamily: 'Manrope, sans-serif' }}>
-              TVUSVET Laudos
-            </h1>
-            <p className="text-gray-600">Sistema de Ultrassonografia Veterinária - 100% Offline</p>
+          <div className="flex items-center">
+            <img 
+              src="/logo-tvusvet.png" 
+              alt="TVUSVET Multi-Laudos" 
+              className="max-w-xs h-auto"
+            />
           </div>
           <div className="flex gap-3">
             <Button
