@@ -189,9 +189,18 @@ export function TemplatesManager({ templates, onUpdate }) {
                 <SelectTrigger>
                   <SelectValue placeholder="Selecione o órgão/estrutura" />
                 </SelectTrigger>
-                <SelectContent>
-                  {ORGANS.map(organ => (
-                    <SelectItem key={organ} value={organ}>{organ}</SelectItem>
+                <SelectContent className="max-h-[400px]">
+                  {ALL_STRUCTURES.map((group) => (
+                    <div key={group.category}>
+                      <div className="px-2 py-1.5 text-sm font-semibold text-primary bg-secondary/50">
+                        {group.category}
+                      </div>
+                      {group.structures.map((structure) => (
+                        <SelectItem key={`${group.category}-${structure}`} value={structure}>
+                          {structure}
+                        </SelectItem>
+                      ))}
+                    </div>
                   ))}
                 </SelectContent>
               </Select>
