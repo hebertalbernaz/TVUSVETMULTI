@@ -466,17 +466,29 @@ export default function ExamPage() {
               <CardContent className="p-2">
                 <ScrollArea className="h-[calc(100vh-300px)]">
                   <div className="space-y-1">
-                    {organsData.map((organ, idx) => (
-                      <Button
-                        key={idx}
-                        variant={currentOrganIndex === idx ? 'default' : 'ghost'}
-                        className="w-full justify-start text-left text-xs py-3 h-auto min-h-[44px]"
-                        onClick={() => setCurrentOrganIndex(idx)}
-                        data-testid={`organ-button-${idx}`}
-                      >
-                        {organ.organ_name}
-                      </Button>
-                    ))}
+                    {organsData.map((organ, idx) => {
+                      const isCompleted = isStructureCompleted(organ);
+                      const isActive = currentOrganIndex === idx;
+                      
+                      return (
+                        <Button
+                          key={idx}
+                          variant={isActive ? 'default' : 'ghost'}
+                          className={`w-full justify-start text-left text-xs py-3 h-auto min-h-[44px] relative ${
+                            !isActive && isCompleted ? 'bg-green-50 hover:bg-green-100 border-green-200 border' : ''
+                          }`}
+                          onClick={() => setCurrentOrganIndex(idx)}
+                          data-testid={`organ-button-${idx}`}
+                        >
+                          <span className="flex items-center gap-2 w-full">
+                            {isCompleted && (
+                              <Check className="h-3 w-3 text-green-600 flex-shrink-0" />
+                            )}
+                            <span className="flex-1">{organ.organ_name}</span>
+                          </span>
+                        </Button>
+                      );
+                    })}
                   </div>
                 </ScrollArea>
               </CardContent>
