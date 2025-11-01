@@ -61,8 +61,8 @@ export default function HomePage() {
       <div className="container mx-auto p-6">
         <img 
           src="/logo-tvusvet.png" 
-          alt="TVUSVET MULTI-LAUDOS" 
-          className="max-w-xs mx-auto mb-8"
+          alt="TVUSVET Multi Laudos" 
+          className="max-w-[300px] mx-auto mb-8"
         />
         <div className="flex justify-between items-center mb-8">
           <div></div>
