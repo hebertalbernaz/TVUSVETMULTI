@@ -1,10 +1,11 @@
-// TVUSVET Service Worker
-const CACHE_NAME = 'tvusvet-v1';
+// TVUSVET Multi Laudos Service Worker
+const CACHE_NAME = 'tvusvet-multi-v2';
 const urlsToCache = [
   '/',
   '/static/css/main.css',
   '/static/js/main.js',
   '/manifest.json',
+  '/logo-tvusvet.png',
   '/icon-192.png',
   '/icon-512.png'
 ];
