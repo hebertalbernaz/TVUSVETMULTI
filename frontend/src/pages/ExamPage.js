@@ -222,8 +222,10 @@ export default function ExamPage() {
         const od = organsData.find((o) => o.organ_name === organName);
         if (!od) return;
         if (od.report_text && od.report_text.trim()) {
-          docChildren.push(new Paragraph({ text: organName, heading: HeadingLevel.HEADING_3 }));
-          const lines = od.report_text.split('\n');
+          // Translate organ name and report text
+          docChildren.push(new Paragraph({ text: t(organName), heading: HeadingLevel.HEADING_3 }));
+          const translatedText = t(od.report_text);
+          const lines = translatedText.split('\n');
           lines.forEach((line) => docChildren.push(new Paragraph({ text: line })));
           docChildren.push(new Paragraph({ text: ' ' }));
         }
